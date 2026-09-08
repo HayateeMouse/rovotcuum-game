@@ -1,0 +1,663 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>おそうじロボット大作戦</title>
+    <!-- Three.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <!-- Tone.js for Sound Effects -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: #1a1a2e; font-family: 'Inter', sans-serif; user-select: none; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; box-sizing: border-box; }
+        .interactive { pointer-events: auto; }
+        
+        /* 左右分割用ビューポートオーバーレイ */
+        .split-view-container {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            display: none; pointer-events: none; z-index: 5;
+        }
+        .split-line {
+            position: absolute; top: 0; left: 50%; width: 4px; height: 100%;
+            background: rgba(255, 255, 255, 0.3); transform: translateX(-50%); display: none; z-index: 6;
+        }
+
+        .joystick-zone { 
+            position: absolute; width: 120px; height: 120px; 
+            background: rgba(255,255,255,0.3); border-radius: 50%; 
+            touch-action: none; display: none; 
+            justify-content: center; align-items: center; z-index: 10; 
+            pointer-events: none;
+        }
+        .joystick-knob { 
+            width: 50px; height: 50px; background: rgba(255,255,255,0.9); 
+            border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); pointer-events: none; 
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 2P用 画面分割ライン -->
+    <div id="splitLine" class="split-line"></div>
+
+    <!-- UI Overlay -->
+    <div class="ui-layer">
+        <!-- Top Info Header -->
+        <div id="hud" class="flex justify-between items-center w-full max-w-4xl mx-auto bg-white/80 backdrop-blur-md px-6 py-3 rounded-2xl shadow-lg hidden">
+            <div id="score1Container" class="flex items-center gap-3">
+                <div class="w-6 h-6 rounded-full bg-slate-900 border-2 border-white shadow"></div>
+                <span id="score1Text" class="text-xl font-bold text-slate-800">1P: 0</span>
+            </div>
+            <div id="gameTitleHUD" class="text-lg font-black text-indigo-600 tracking-wider">🧹 おそうじ大作戦</div>
+            <div id="score2Container" class="flex items-center gap-3">
+                <span id="score2Text" class="text-xl font-bold text-slate-800">2P: 0</span>
+                <div class="w-6 h-6 rounded-full bg-white border-2 border-slate-900 shadow"></div>
+            </div>
+        </div>
+
+        <!-- Center Screen: Menu / Game Over -->
+        <div id="menuScreen" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col justify-center items-center interactive z-30">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full mx-4 border-4 border-indigo-100">
+                <h1 class="text-4xl font-black text-indigo-600 mb-2">🧹 おそうじロボット大作戦</h1>
+                <p class="text-slate-600 mb-8 font-medium">300このゴミをぜんぶきれいに出発しよう！</p>
+                
+                <div class="flex flex-col gap-4">
+                    <button onclick="startGame(1)" class="w-full py-4 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-xl rounded-2xl shadow-lg hover:scale-105 transition transform active:scale-95">
+                        👤 1人で あそぶ
+                    </button>
+                    <button onclick="startGame(2)" class="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xl rounded-2xl shadow-lg hover:scale-105 transition transform active:scale-95">
+                        👥 2人で たいせん
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Result / Game Clear Screen -->
+        <div id="resultScreen" class="absolute inset-0 bg-slate-900/80 backdrop-blur-sm flex flex-col justify-center items-center interactive z-30 hidden">
+            <div class="bg-white p-8 rounded-3xl shadow-2xl text-center max-w-md w-full mx-4 border-4 border-yellow-200">
+                <h1 id="resultTitle" class="text-4xl font-black text-yellow-500 mb-4">🏆 おそうじかんりょう！</h1>
+                <p id="resultMessage" class="text-2xl font-bold text-slate-700 mb-8">おめでとう！</p>
+                <button onclick="returnToMenu()" class="w-full py-4 bg-indigo-600 text-white font-bold text-xl rounded-2xl shadow-lg hover:bg-indigo-700 transition">
+                    🏠 メニューにもどる
+                </button>
+            </div>
+        </div>
+
+        <!-- Controls Help for PC -->
+        <div class="hidden md:block bg-white/80 backdrop-blur-md p-4 rounded-2xl shadow-lg text-slate-700 text-sm self-start pointer-events-none">
+            <p class="font-bold mb-1">🎮 操作方法:</p>
+            <p>【1P / 黒】 矢印キー ( ↑ ↓ ← → )</p>
+            <p>【2P / 白】 W・A・S・D キー</p>
+        </div>
+    </div>
+
+    <!-- Mobile Joysticks -->
+    <div id="joystickZone1" class="joystick-zone">
+        <div id="joystickKnob1" class="joystick-knob"></div>
+    </div>
+    <div id="joystickZone2" class="joystick-zone">
+        <div id="joystickKnob2" class="joystick-knob"></div>
+    </div>
+
+    <script>
+        let scene, camera, renderer;
+        let robots = [];
+        let trashes = [];
+        let keys = {};
+        let joystickDelta1 = { x: 0, z: 0 };
+        let joystickDelta2 = { x: 0, z: 0 };
+        let isGameStarted = false;
+        let isGameCleared = false;
+        let playerMode = 1;
+        const totalTrashes = 300;
+
+        let clock = new THREE.Clock();
+
+        // Sound Synths
+        let vacuumSynth, popSynth, bgmSynth, bgmLoop;
+        let isVacuumSounding = false;
+
+        function initAudio() {
+            if (Tone.context.state !== 'running') {
+                Tone.start();
+            }
+            // 掃除機の大きなリアルな音 (低域を太くしたノイズ)
+            vacuumSynth = new Tone.NoiseSynth({
+                noise: { type: 'pink' },
+                envelope: { attack: 0.1, decay: 0.2, sustain: 0.9, release: 0.2 }
+            }).toDestination();
+            vacuumSynth.volume.value = 2; // 音量を大きめに
+
+            // ワインのコルク抜きのようなポンッという音（和音対応PolySynth）
+            popSynth = new Tone.PolySynth(Tone.Synth, {
+                oscillator: { type: 'sine' },
+                envelope: { attack: 0.005, decay: 0.18, sustain: 0, release: 0.1 }
+            }).toDestination();
+            popSynth.volume.value = 4;
+
+            // BGM
+            bgmSynth = new Tone.Synth({
+                oscillator: { type: 'triangle' },
+                envelope: { attack: 0.05, decay: 0.2, sustain: 0.2, release: 0.2 }
+            }).toDestination();
+            bgmSynth.volume.value = -10;
+
+            const notes = ['C4', 'E4', 'G4', 'B4', 'C5', 'G4', 'E4', 'D4'];
+            let noteIdx = 0;
+            bgmLoop = new Tone.Loop((time) => {
+                if (isGameStarted && !isGameCleared) {
+                    bgmSynth.triggerAttackRelease(notes[noteIdx], '8n', time);
+                    noteIdx = (noteIdx + 1) % notes.length;
+                }
+            }, '4n');
+        }
+
+        function playStartMelody() {
+            const synth = new Tone.Synth().toDestination();
+            const now = Tone.now();
+            synth.triggerAttackRelease("C4", "8n", now);
+            synth.triggerAttackRelease("E4", "8n", now + 0.15);
+            synth.triggerAttackRelease("G4", "8n", now + 0.3);
+            synth.triggerAttackRelease("C5", "4n", now + 0.45);
+        }
+
+        function playClearMelody() {
+            const synth = new Tone.PolySynth().toDestination();
+            const now = Tone.now();
+            synth.triggerAttackRelease(["C4", "E4", "G4"], "8n", now);
+            synth.triggerAttackRelease(["D4", "F4", "A4"], "8n", now + 0.2);
+            synth.triggerAttackRelease(["E4", "G4", "C5"], "2n", now + 0.4);
+
+            // 音声合成でおめでとう
+            if ('speechSynthesis' in window) {
+                const utter = new SpeechSynthesisUtterance('おめでとう！おそうじかんりょう！');
+                utter.lang = 'ja-JP';
+                utter.pitch = 1.3;
+                utter.rate = 1.0;
+                window.speechSynthesis.speak(utter);
+            }
+        }
+
+        function initThree() {
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x1a1a2e);
+            scene.fog = new THREE.FogExp2(0x1a1a2e, 0.015);
+
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 35, 25);
+            camera.lookAt(0, 0, 0);
+
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            document.body.appendChild(renderer.domElement);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
+            scene.add(ambientLight);
+
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+            dirLight.position.set(20, 40, 20);
+            dirLight.castShadow = true;
+            scene.add(dirLight);
+
+            // Room Floor & Walls
+            createRoom();
+
+            // Input setup
+            setupInput();
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function createRoom() {
+            // Floor
+            const floorGeo = new THREE.PlaneGeometry(60, 60);
+            const floorMat = new THREE.MeshStandardMaterial({ color: 0x222831, roughness: 0.8 });
+            const floor = new THREE.Mesh(floorGeo, floorMat);
+            floor.rotation.x = -Math.PI / 2;
+            floor.receiveShadow = true;
+            scene.add(floor);
+
+            // Walls (Front wall is semi-transparent so we can see inside)
+            const wallMat = new THREE.MeshStandardMaterial({ color: 0x393e46, roughness: 0.5 });
+            const transWallMat = new THREE.MeshStandardMaterial({ color: 0x393e46, transparent: true, opacity: 0.25, roughness: 0.5 });
+
+            const north = new THREE.Mesh(new THREE.BoxGeometry(60, 5, 1), wallMat);
+            north.position.set(0, 2.5, -30);
+            scene.add(north);
+
+            const south = new THREE.Mesh(new THREE.BoxGeometry(60, 5, 1), transWallMat); // 手前の壁は透明
+            south.position.set(0, 2.5, 30);
+            scene.add(south);
+
+            const west = new THREE.Mesh(new THREE.BoxGeometry(1, 5, 60), wallMat);
+            west.position.set(-30, 2.5, 0);
+            scene.add(west);
+
+            const east = new THREE.Mesh(new THREE.BoxGeometry(1, 5, 60), wallMat);
+            east.position.set(30, 2.5, 0);
+            scene.add(east);
+        }
+
+        function createRobots() {
+            robots.forEach(r => scene.remove(r.mesh));
+            robots = [];
+
+            // 1P Robot (Black)
+            robots.push({
+                mesh: createRobotMesh(0x111111, 0x3b82f6),
+                pos: new THREE.Vector3(-5, 0, 0),
+                velocity: new THREE.Vector3(0, 0, 0),
+                score: 0,
+                id: 1
+            });
+
+            // 2P Robot (White) - only if 2 players mode
+            if (playerMode === 2) {
+                robots.push({
+                    mesh: createRobotMesh(0xf8fafc, 0xef4444),
+                    pos: new THREE.Vector3(5, 0, 0),
+                    velocity: new THREE.Vector3(0, 0, 0),
+                    score: 0,
+                    id: 2
+                });
+            }
+
+            robots.forEach(r => {
+                r.mesh.position.copy(r.pos);
+                scene.add(r.mesh);
+            });
+        }
+
+        function createRobotMesh(bodyColor, lightColor) {
+            const group = new THREE.Group();
+            
+            // Body
+            const bodyGeo = new THREE.CylinderGeometry(2, 2, 0.8, 32);
+            const bodyMat = new THREE.MeshStandardMaterial({ color: bodyColor, metalness: 0.3, roughness: 0.4 });
+            const body = new THREE.Mesh(bodyGeo, bodyMat);
+            body.position.y = 0.4;
+            body.castShadow = true;
+            group.add(body);
+
+            // Bumper Ring
+            const bumperGeo = new THREE.TorusGeometry(2.1, 0.15, 16, 32);
+            const bumperMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
+            const bumper = new THREE.Mesh(bumperGeo, bumperMat);
+            bumper.rotation.x = Math.PI / 2;
+            bumper.position.y = 0.4;
+            group.add(bumper);
+
+            // Status Light
+            const lightGeo = new THREE.SphereGeometry(0.4, 16, 16);
+            const lightMat = new THREE.MeshBasicMaterial({ color: lightColor });
+            const light = new THREE.Mesh(lightGeo, lightMat);
+            light.position.set(0, 0.8, 0);
+            group.add(light);
+
+            return group;
+        }
+
+        function createTrashes() {
+            trashes.forEach(t => scene.remove(t.mesh));
+            trashes = [];
+
+            const colors = [0xef4444, 0x3b82f6, 0xeab308, 0x10b981, 0xec4899];
+            const geometries = [
+                () => new THREE.BoxGeometry(1.2, 1.2, 1.2),
+                () => new THREE.SphereGeometry(0.8, 16, 16),
+                () => new THREE.ConeGeometry(0.8, 1.6, 16)
+            ];
+
+            for (let i = 0; i < totalTrashes; i++) {
+                const geoFn = geometries[Math.floor(Math.random() * geometries.length)];
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                const mat = new THREE.MeshStandardMaterial({ color: color, roughness: 0.3 });
+                const mesh = new THREE.Mesh(geoFn(), mat);
+
+                const x = (Math.random() - 0.5) * 50;
+                const z = (Math.random() - 0.5) * 50;
+                mesh.position.set(x, 0.6, z);
+                mesh.castShadow = true;
+
+                scene.add(mesh);
+                trashes.push({ mesh: mesh, collected: false });
+            }
+        }
+
+        function setupInput() {
+            window.addEventListener('keydown', (e) => keys[e.code] = true);
+            window.addEventListener('keyup', (e) => keys[e.code] = false);
+
+            // Mobile Floating Joysticks (左右分割対応)
+            let activeTouches = {}; // touchId -> { player, zone, knob, center }
+
+            document.body.addEventListener('touchstart', (e) => {
+                if (!isGameStarted || isGameCleared) return;
+
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    if (touch.target.tagName === 'BUTTON') continue;
+
+                    const screenW = window.innerWidth;
+                    let player = 1;
+                    let zoneEl = document.getElementById('joystickZone1');
+                    let knobEl = document.getElementById('joystickKnob1');
+
+                    if (playerMode === 2) {
+                        // 2人プレイ時は画面の左半分か右半分かで担当を分ける
+                        if (touch.clientX > screenW / 2) {
+                            player = 2;
+                            zoneEl = document.getElementById('joystickZone2');
+                            knobEl = document.getElementById('joystickKnob2');
+                        }
+                    } else {
+                        // 1人プレイ時は全画面どこでも1P用
+                        player = 1;
+                        zoneEl = document.getElementById('joystickZone1');
+                        knobEl = document.getElementById('joystickKnob1');
+                    }
+
+                    // 既にその指が使われていない場合のみ割り当て
+                    if (!activeTouches[touch.identifier]) {
+                        const center = { x: touch.clientX, y: touch.clientY };
+                        zoneEl.style.display = 'flex';
+                        zoneEl.style.left = (center.x - 60) + 'px';
+                        zoneEl.style.top = (center.y - 60) + 'px';
+                        knobEl.style.transform = `translate(0px, 0px)`;
+
+                        activeTouches[touch.identifier] = { player, zoneEl, knobEl, center };
+                        updateJoystickMove(touch, activeTouches[touch.identifier]);
+                    }
+                }
+            }, { passive: false });
+
+            document.body.addEventListener('touchmove', (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    const info = activeTouches[touch.identifier];
+                    if (info) {
+                        e.preventDefault();
+                        updateJoystickMove(touch, info);
+                    }
+                }
+            }, { passive: false });
+
+            const endTouch = (e) => {
+                for (let i = 0; i < e.changedTouches.length; i++) {
+                    const touch = e.changedTouches[i];
+                    const info = activeTouches[touch.identifier];
+                    if (info) {
+                        if (info.player === 1) joystickDelta1 = { x: 0, z: 0 };
+                        if (info.player === 2) joystickDelta2 = { x: 0, z: 0 };
+                        info.zoneEl.style.display = 'none';
+                        delete activeTouches[touch.identifier];
+                    }
+                }
+            };
+
+            document.body.addEventListener('touchend', endTouch);
+            document.body.addEventListener('touchcancel', endTouch);
+
+            function updateJoystickMove(touch, info) {
+                const dx = touch.clientX - info.center.x;
+                const dy = touch.clientY - info.center.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const maxDist = 35;
+                let nx = dx, ny = dy;
+                if (dist > maxDist) {
+                    nx = (dx / dist) * maxDist;
+                    ny = (dy / dist) * maxDist;
+                }
+                info.knobEl.style.transform = `translate(${nx}px, ${ny}px)`;
+
+                const valX = dx / maxDist;
+                const valZ = dy / maxDist;
+
+                if (info.player === 1) {
+                    joystickDelta1.x = valX;
+                    joystickDelta1.z = valZ;
+                } else if (info.player === 2) {
+                    joystickDelta2.x = valX;
+                    joystickDelta2.z = valZ;
+                }
+            }
+        }
+
+        function startGame(mode) {
+            playerMode = mode;
+            initAudio();
+            Tone.Transport.start();
+            if (bgmLoop) bgmLoop.start(0);
+
+            playStartMelody();
+
+            isGameStarted = true;
+            isGameCleared = false;
+            clock.start();
+
+            document.getElementById('menuScreen').classList.add('hidden');
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('hud').classList.remove('hidden');
+
+            // 2P HUD & 画面分割ラインの切り替え
+            const splitLine = document.getElementById('splitLine');
+            if (playerMode === 1) {
+                document.getElementById('score2Container').classList.add('hidden');
+                splitLine.style.display = 'none';
+            } else {
+                document.getElementById('score2Container').classList.remove('hidden');
+                splitLine.style.display = 'block';
+            }
+
+            createRobots();
+            createTrashes();
+        }
+
+        function returnToMenu() {
+            if (bgmLoop) bgmLoop.stop();
+            isGameStarted = false;
+            isGameCleared = false;
+
+            document.getElementById('resultScreen').classList.add('hidden');
+            document.getElementById('menuScreen').classList.remove('hidden');
+            document.getElementById('hud').classList.add('hidden');
+            document.getElementById('splitLine').style.display = 'none';
+            document.getElementById('joystickZone1').style.display = 'none';
+            document.getElementById('joystickZone2').style.display = 'none';
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            let delta = clock.getDelta();
+            if (delta > 0.1) delta = 0.1; // ズレ防止のキャップ
+
+            if (isGameStarted && !isGameCleared) {
+                updateGame(delta);
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function updateGame(delta) {
+            const speedFactor = delta * 60; // どの環境でも一定のスピードにする係数
+            const acceleration = 0.12 * speedFactor;
+            const friction = Math.pow(0.85, speedFactor); // 滑らかな慣性
+            let movingAny = false;
+
+            // --- 1P Robot Control (Arrow Keys / Joystick 1) ---
+            let dir1 = new THREE.Vector3(0, 0, 0);
+            if (keys['ArrowUp'] || keys['KeyW'] && playerMode === 1) dir1.z -= 1;
+            if (keys['ArrowDown'] || keys['KeyS'] && playerMode === 1) dir1.z += 1;
+            if (keys['ArrowLeft'] || keys['KeyA'] && playerMode === 1) dir1.x -= 1;
+            if (keys['ArrowRight'] || keys['KeyD'] && playerMode === 1) dir1.x += 1;
+
+            if (joystickDelta1.x !== 0 || joystickDelta1.z !== 0) {
+                dir1.x += joystickDelta1.x;
+                dir1.z += joystickDelta1.z;
+            }
+
+            if (dir1.lengthSq() > 0) {
+                dir1.normalize();
+                robots[0].velocity.addScaledVector(dir1, acceleration);
+                movingAny = true;
+            }
+
+            // --- 2P Robot Control (WASD / Joystick 2) ---
+            if (playerMode === 2 && robots.length > 1) {
+                let dir2 = new THREE.Vector3(0, 0, 0);
+                if (keys['KeyW']) dir2.z -= 1;
+                if (keys['KeyS']) dir2.z += 1;
+                if (keys['KeyA']) dir2.x -= 1;
+                if (keys['KeyD']) dir2.x += 1;
+
+                if (joystickDelta2.x !== 0 || joystickDelta2.z !== 0) {
+                    dir2.x += joystickDelta2.x;
+                    dir2.z += joystickDelta2.z;
+                }
+
+                if (dir2.lengthSq() > 0) {
+                    dir2.normalize();
+                    robots[1].velocity.addScaledVector(dir2, acceleration);
+                    movingAny = true;
+                }
+            }
+
+            // Vacuum Sound management
+            if (movingAny) {
+                if (!isVacuumSounding) {
+                    try { vacuumSynth.triggerAttack(); isVacuumSounding = true; } catch (e) {}
+                }
+            } else {
+                if (isVacuumSounding) {
+                    try { vacuumSynth.triggerRelease(); isVacuumSounding = false; } catch (e) {}
+                }
+            }
+
+            // Update Robots position & collision with walls
+            robots.forEach(robot => {
+                robot.velocity.multiplyScalar(friction);
+                robot.pos.addScaledVector(robot.velocity, speedFactor);
+
+                // Wall bounds (-28 to 28)
+                const limit = 28;
+                if (robot.pos.x < -limit) { robot.pos.x = -limit; robot.velocity.x *= -0.5; }
+                if (robot.pos.x > limit) { robot.pos.x = limit; robot.velocity.x *= -0.5; }
+                if (robot.pos.z < -limit) { robot.pos.z = -limit; robot.velocity.z *= -0.5; }
+                if (robot.pos.z > limit) { robot.pos.z = limit; robot.velocity.z *= -0.5; }
+
+                robot.mesh.position.copy(robot.pos);
+            });
+
+            // Collision between 1P and 2P (Bounce)
+            if (robots.length > 1) {
+                const r1 = robots[0];
+                const r2 = robots[1];
+                const dist = r1.pos.distanceTo(r2.pos);
+                if (dist < 4.0) {
+                    const pushDir = new THREE.Vector3().subVectors(r1.pos, r2.pos).normalize();
+                    r1.velocity.addScaledVector(pushDir, 0.2);
+                    r2.velocity.addScaledVector(pushDir, -0.2);
+                }
+            }
+
+            // Trash Collection Check
+            trashes.forEach(trash => {
+                if (!trash.collected) {
+                    robots.forEach(robot => {
+                        if (robot.pos.distanceTo(trash.mesh.position) < 2.5) {
+                            trash.collected = true;
+                            scene.remove(trash.mesh);
+                            robot.score++;
+                            
+                            // Play cork pop sound with dynamic pitch change
+                            try {
+                                const pitch = 300 + (robot.score * 12);
+                                popSynth.triggerAttackRelease(pitch, '16n', Tone.now());
+                            } catch (e) {}
+
+                            updateHUD();
+                        }
+                    });
+                }
+            });
+
+            // Camera follow center of robots
+            if (robots.length > 0) {
+                let centerPos = new THREE.Vector3();
+                robots.forEach(r => centerPos.add(r.pos));
+                centerPos.divideScalar(robots.length);
+
+                camera.position.x += (centerPos.x - camera.position.x) * 0.05;
+                camera.position.z += (centerPos.z + 25 - camera.position.z) * 0.05;
+                camera.lookAt(centerPos.x, 0, centerPos.z);
+            }
+
+            // Check Win Condition
+            const collectedCount = trashes.filter(t => t.collected).length;
+            if (collectedCount >= totalTrashes && !isGameCleared) {
+                isGameCleared = true;
+                if (isVacuumSounding) {
+                    try { vacuumSynth.triggerRelease(); isVacuumSounding = false; } catch (e) {}
+                }
+                if (bgmLoop) bgmLoop.stop();
+                playClearMelody();
+                showResult();
+            }
+        }
+
+        function updateHUD() {
+            if (playerMode === 1) {
+                document.getElementById('score1Text').innerText = `ごみ: ${robots[0].score} / ${totalTrashes}`;
+            } else {
+                document.getElementById('score1Text').innerText = `1P: ${robots[0].score}`;
+                document.getElementById('score2Text').innerText = `2P: ${robots[1].score}`;
+            }
+        }
+
+        function showResult() {
+            const resultScreen = document.getElementById('resultScreen');
+            const resultTitle = document.getElementById('resultTitle');
+            const resultMessage = document.getElementById('resultMessage');
+
+            resultScreen.classList.remove('hidden');
+
+            if (playerMode === 1) {
+                resultTitle.innerText = "🏆 おそうじかんりょう！";
+                resultMessage.innerText = `ぜんぶのゴミをきれいすいこんだよ！`;
+            } else {
+                const s1 = robots[0].score;
+                const s2 = robots[1].score;
+                if (s1 > s2) {
+                    resultTitle.innerText = "🏆 1P (黒) のかち！";
+                    resultMessage.innerText = `黒チーム: ${s1}こ vs 白チーム: ${s2}こ`;
+                } else if (s2 > s1) {
+                    resultTitle.innerText = "🏆 2P (白) のかち！";
+                    resultMessage.innerText = `白チーム: ${s2}こ vs 黒チーム: ${s1}こ`;
+                } else {
+                    resultTitle.innerText = "🤝 ひきわけ！";
+                    resultMessage.innerText = `ふたりとも おなじ ${s1}こ だよ！`;
+                }
+            }
+        }
+
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        window.onload = function() {
+            initThree();
+            animate();
+        };
+    </script>
+</body>
+</html>
