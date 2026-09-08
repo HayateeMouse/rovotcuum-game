@@ -1,17 +1,16 @@
+```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>おそうじロボット大作戦 - Robot Cleaning Adventure</title>
-    <!-- Three.js CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background: #1a1a2e; font-family: 'Inter', sans-serif; user-select: none; }
         canvas { display: block; width: 100vw; height: 100vh; }
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 6px; box-sizing: border-box; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 4px; box-sizing: border-box; }
         .interactive { pointer-events: auto; }
         
         .split-line {
@@ -30,197 +29,150 @@
             width: 50px; height: 50px; background: rgba(255,255,255,0.8); 
             border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); pointer-events: none; 
         }
-
-        @keyframes blinking {
-            0% { opacity: 1; }
-            50% { opacity: 0.2; }
-            100% { opacity: 1; }
-        }
-        .blinking { animation: blinking 0.3s infinite; }
     </style>
 </head>
 <body>
-
     <div id="splitLine" class="split-line"></div>
 
     <div class="ui-layer">
-        <div id="hud" class="flex justify-between items-center w-full max-w-4xl mx-auto bg-white/90 backdrop-blur-md px-3 py-1 rounded-lg shadow-md hidden">
+        <div id="hud" class="flex justify-between items-center w-full max-w-xl mx-auto bg-white/90 backdrop-blur-md px-2.5 py-1 rounded shadow-md hidden">
             <div class="flex items-center gap-1.5">
-                <button onclick="openSettings()" class="interactive px-2 py-0.5 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded text-[10px] shadow flex flex-col items-center leading-tight">
-                    <span>⚙️ せってい</span>
-                    <span class="text-[7px] text-slate-300 font-normal">Settings</span>
+                <button onclick="openSettings()" class="interactive px-1.5 py-0.5 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded text-[8px] shadow flex flex-col items-center leading-tight">
+                    <span>⚙️ 設定 <span class="text-[5px] opacity-75">Settings</span></span>
                 </button>
-                <div id="stageIndicator" class="bg-indigo-600 text-white px-2 py-0.5 rounded font-bold text-[10px] shadow flex flex-col items-center leading-tight">
-                    <span>ステージ 1</span>
-                    <span class="text-[7px] text-indigo-200 font-normal">Stage 1</span>
+                <div id="stageIndicator" class="bg-indigo-600 text-white px-2 py-0.5 rounded font-bold text-[8px] shadow flex flex-col items-center leading-tight">
+                    <span>ステージ 1 <span class="text-[5px] opacity-75">Stage 1</span></span>
                 </div>
             </div>
             
             <div id="bossHpContainer" class="hidden flex-col items-center bg-rose-100 border border-rose-500 px-2 py-0.5 rounded shadow">
-                <span id="bossHpText" class="text-[9px] font-black text-rose-700">👑 ボス糸くず (HP: 100/100)</span>
-                <span class="text-[6px] text-rose-500 font-bold">Boss Threat</span>
-                <div class="w-28 bg-slate-200 h-1.5 rounded-full overflow-hidden mt-0.5 border border-rose-300">
-                    <div id="bossHpBar" class="bg-rose-600 h-full w-full transition-all duration-200"></div>
+                <span id="bossHpText" class="text-[7px] font-black text-rose-700">👑 ゴリラボス (HP: 100/100) <span class="text-[5px] opacity-75">Boss Threat</span></span>
+                <div class="w-20 bg-slate-200 h-1.5 rounded-full overflow-hidden mt-0.5 border border-rose-300">
+                    <div id="bossHpBar" class="bg-rose-600 h-full w-full transition-all duration-100"></div>
                 </div>
             </div>
 
             <div id="score1Container" class="flex items-center gap-1">
-                <div class="w-3 h-3 rounded-full bg-slate-900 border-2 border-white shadow"></div>
+                <div class="w-2 h-2 rounded-full bg-slate-900 border-2 border-white shadow"></div>
                 <div class="flex flex-col leading-tight">
-                    <span id="score1Text" class="text-[11px] font-bold text-slate-800">ゴミ: 0/10</span>
-                    <span class="text-[7px] text-slate-500">Trash Cleaned</span>
+                    <span id="score1Text" class="text-[8px] font-bold text-slate-800">ゴミ: 0/10 <span class="text-[5px] opacity-75">Trash</span></span>
                 </div>
             </div>
             <div id="score2Container" class="flex items-center gap-1 hidden">
                 <div class="flex flex-col leading-tight text-right">
-                    <span id="score2Text" class="text-[11px] font-bold text-slate-800">2P: 0</span>
-                    <span class="text-[7px] text-slate-500">Player 2</span>
+                    <span id="score2Text" class="text-[8px] font-bold text-slate-800">2P: 0 <span class="text-[5px] opacity-75">P2</span></span>
                 </div>
-                <div class="w-3 h-3 rounded-full bg-white border-2 border-slate-900 shadow"></div>
+                <div class="w-2 h-2 rounded-full bg-white border-2 border-slate-900 shadow"></div>
             </div>
         </div>
 
         <div id="menuScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-30">
-            <div class="bg-white p-4 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-indigo-100">
-                <h1 class="text-lg font-black text-indigo-600 mb-0.5">🧹 おそうじロボット大作戦</h1>
-                <p class="text-[9px] font-bold text-indigo-400 mb-1">Robot Cleaning Adventure</p>
-                <p class="text-slate-600 mb-3 text-[11px] font-medium">全5ステージの大冒険！ / 5 Stages of Epic Fun</p>
+            <div class="bg-white p-3 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-indigo-100">
+                <h1 class="text-xs font-black text-indigo-600 mb-0.5">🧹 おそうじロボット大作戦</h1>
+                <p class="text-[7px] font-bold text-indigo-400 mb-2">Robot Cleaning Adventure</p>
                 
-                <div class="flex flex-col gap-2">
-                    <button onclick="startGame(1)" class="w-full py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-xs rounded-lg shadow hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
-                        <span>👤 1人で あそぶ</span>
-                        <span class="text-[8px] text-blue-100 font-normal">Single Player Mode</span>
+                <div class="flex flex-col gap-1.5">
+                    <button onclick="startGame(1)" class="w-full py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-[9px] rounded-lg shadow hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
+                        <span>👤 1人で あそぶ <span class="text-[6px] opacity-80 font-normal">Single Player</span></span>
                     </button>
-                    <button onclick="startGame(2)" class="w-full py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xs rounded-lg shadow hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
-                        <span>👥 2人で たいせん</span>
-                        <span class="text-[8px] text-emerald-100 font-normal">2-Player Versus Mode</span>
+                    <button onclick="startGame(2)" class="w-full py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-[9px] rounded-lg shadow hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
+                        <span>👥 2人で たいせん <span class="text-[6px] opacity-80 font-normal">2-Player Versus</span></span>
                     </button>
-                    <button onclick="openSettings()" class="w-full py-1.5 bg-slate-200 text-slate-700 font-bold text-[11px] rounded-lg shadow hover:bg-slate-300 transition flex flex-col items-center">
-                        <span>⚙️ せってい</span>
-                        <span class="text-[8px] text-slate-500 font-normal">Settings & Test Code</span>
+                    <button onclick="openSettings()" class="w-full py-1.5 bg-slate-200 text-slate-700 font-bold text-[8px] rounded-lg shadow hover:bg-slate-300 transition flex flex-col items-center">
+                        <span>⚙️ 設定・テスト <span class="text-[6px] opacity-70 font-normal">Settings & Test</span></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="settingsScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-30 hidden overflow-y-auto py-2">
+        <div id="settingsScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden overflow-y-auto py-2">
             <div class="bg-white p-3 rounded-xl shadow-2xl text-left max-w-xs w-full mx-4 border-2 border-slate-200">
-                <h1 class="text-sm font-black text-slate-800 mb-0.5 text-center">⚙️ せってい画面</h1>
-                <p class="text-[7px] text-slate-500 text-center mb-1.5">Settings & Customization</p>
+                <h1 class="text-[10px] font-black text-slate-800 mb-0.5 text-center">⚙️ 設定画面 <span class="text-[6px] opacity-70">Settings</span></h1>
                 
-                <!-- Volume Slider -->
-                <div class="mb-1.5">
-                    <label class="block text-[9px] font-bold text-slate-700 mb-0.5">🔊 サウンド音量 / Volume: <span id="volumeValue">80</span>%</label>
+                <div class="mb-1">
+                    <label class="block text-[7px] font-bold text-slate-700 mb-0.5">🔊 音量 / Volume: <span id="volumeValue">80</span>%</label>
                     <input type="range" id="volumeSlider" min="0" max="100" value="80" oninput="updateVolume(this.value)" class="w-full accent-indigo-600 cursor-pointer">
                 </div>
 
-                <!-- Trash Count Slider -->
-                <div class="mb-1.5">
-                    <label class="block text-[9px] font-bold text-slate-700 mb-0.5">🗑️ ゴミの数 / Trash (10〜200): <span id="trashCountValue">10</span>個</label>
+                <div class="mb-1">
+                    <label class="block text-[7px] font-bold text-slate-700 mb-0.5">🗑️ ゴミの数 / Trash (10〜200): <span id="trashCountValue">10</span>個</label>
                     <input type="range" id="trashCountSlider" min="10" max="200" step="10" value="10" oninput="updateTrashCountSetting(this.value)" class="w-full accent-indigo-600 cursor-pointer">
                 </div>
 
-                <!-- Difficulty Select -->
-                <div class="mb-1.5">
-                    <label class="block text-[9px] font-bold text-slate-700 mb-0.5">🎮 難易度 / Difficulty Level</label>
+                <div class="mb-1">
+                    <label class="block text-[7px] font-bold text-slate-700 mb-0.5">🎮 難易度 / Speed Preset</label>
                     <div class="grid grid-cols-3 gap-1">
-                        <button id="diffBeginner" onclick="setDifficulty('beginner')" class="py-1 bg-indigo-600 text-white font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>4歳(かんたん)</span><span class="text-[5px] text-indigo-200">Beginner</span>
+                        <button id="diffBeginner" onclick="setDifficulty('beginner')" class="py-1 bg-indigo-600 text-white font-bold rounded text-[6px] flex flex-col items-center">
+                            <span>初級（4歳）</span><span class="text-[5px] opacity-80">Beginner</span>
                         </button>
-                        <button id="diffIntermediate" onclick="setDifficulty('intermediate')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>小学生(ふつう)</span><span class="text-[5px] text-slate-500">Normal</span>
+                        <button id="diffIntermediate" onclick="setDifficulty('intermediate')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[6px] flex flex-col items-center">
+                            <span>中級（小学生）</span><span class="text-[5px] opacity-80">Intermediate</span>
                         </button>
-                        <button id="diffPro" onclick="setDifficulty('pro')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>プロ(むずかしい)</span><span class="text-[5px] text-slate-500">Pro</span>
+                        <button id="diffPro" onclick="setDifficulty('pro')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[6px] flex flex-col items-center">
+                            <span>上級（プロ）</span><span class="text-[5px] opacity-80">Advanced</span>
                         </button>
                     </div>
                 </div>
 
-                <!-- 1P Speed -->
-                <div class="mb-1.5">
-                    <label class="block text-[9px] font-bold text-slate-700 mb-0.5">🤖 1P スピード / P1 Speed</label>
-                    <div class="grid grid-cols-3 gap-1">
-                        <button id="p1SpeedBeginner" onclick="setSpeed(1, 'beginner')" class="py-1 bg-indigo-600 text-white font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>初心者</span><span class="text-[5px] text-indigo-200">Slow</span>
-                        </button>
-                        <button id="p1SpeedIntermediate" onclick="setSpeed(1, 'intermediate')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>中級</span><span class="text-[5px] text-slate-500">Normal</span>
-                        </button>
-                        <button id="p1SpeedPro" onclick="setSpeed(1, 'pro')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>プロ</span><span class="text-[5px] text-slate-500">Fast</span>
-                        </button>
-                    </div>
+                <div class="mb-1 p-1.5 bg-slate-50 rounded border border-slate-200">
+                    <label class="block text-[7px] font-bold text-blue-600 mb-0.5">🤖 1P スピード / 1P Speed (1.5-10.0): <span id="p1SpeedVal">1.50</span></label>
+                    <input type="range" id="p1SpeedSlider" min="1.5" max="10.0" step="0.1" value="1.50" oninput="updateP1Speed(this.value)" class="w-full accent-blue-600 cursor-pointer">
+                    
+                    <label class="block text-[7px] font-bold text-red-600 mt-1 mb-0.5">🤖 2P スピード / 2P Speed (1.5-10.0): <span id="p2SpeedVal">1.50</span></label>
+                    <input type="range" id="p2SpeedSlider" min="1.5" max="10.0" step="0.1" value="1.50" oninput="updateP2Speed(this.value)" class="w-full accent-red-600 cursor-pointer">
                 </div>
 
-                <!-- 2P Speed -->
-                <div class="mb-1.5">
-                    <label class="block text-[9px] font-bold text-slate-700 mb-0.5">🤖 2P スピード / P2 Speed</label>
-                    <div class="grid grid-cols-3 gap-1">
-                        <button id="p2SpeedBeginner" onclick="setSpeed(2, 'beginner')" class="py-1 bg-indigo-600 text-white font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>初心者</span><span class="text-[5px] text-indigo-200">Slow</span>
-                        </button>
-                        <button id="p2SpeedIntermediate" onclick="setSpeed(2, 'intermediate')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>中級</span><span class="text-[5px] text-slate-500">Normal</span>
-                        </button>
-                        <button id="p2SpeedPro" onclick="setSpeed(2, 'pro')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[8px] flex flex-col items-center">
-                            <span>プロ</span><span class="text-[5px] text-slate-500">Fast</span>
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Test Play Code Section -->
-                <div class="mb-2 pt-1 border-t border-slate-200 flex items-center justify-between">
+                <div class="mb-1.5 pt-1 border-t border-slate-200 flex items-center justify-between">
                     <div>
-                        <span class="block text-[8px] font-bold text-slate-500">🧪 テストコード (061606)</span>
-                        <span class="text-[6px] text-slate-400">Secret Test Code</span>
+                        <span class="block text-[6px] font-bold text-slate-500">🧪 テストコード (061606)</span>
+                        <span class="text-[5px] text-slate-400">Secret Test Code</span>
                     </div>
                     <div class="flex gap-1 items-center">
-                        <input type="password" id="secretCodeInput" maxlength="6" placeholder="******" class="w-16 px-1.5 py-0.5 border border-slate-300 rounded text-center tracking-widest font-bold text-slate-700 text-[10px]">
-                        <button onclick="checkSecretCode()" class="px-2 py-0.5 bg-slate-800 text-white font-bold rounded hover:bg-slate-700 text-[9px] shadow">
-                            <span>認証</span>
+                        <input type="password" id="secretCodeInput" maxlength="6" placeholder="******" class="w-14 px-1 py-0.5 border border-slate-300 rounded text-center tracking-widest font-bold text-slate-700 text-[8px]">
+                        <button onclick="checkSecretCode()" class="px-2 py-0.5 bg-slate-800 text-white font-bold rounded hover:bg-slate-700 text-[7px] shadow">
+                            <span>認証 <span class="text-[5px] opacity-75">Auth</span></span>
                         </button>
                     </div>
                 </div>
 
-                <button onclick="closeSettings()" class="w-full py-1 bg-indigo-600 text-white font-bold text-[10px] rounded shadow hover:bg-indigo-700 flex flex-col items-center">
+                <button onclick="closeSettings()" class="w-full py-1 bg-indigo-600 text-white font-bold text-[8px] rounded shadow hover:bg-indigo-700 flex flex-col items-center">
                     <span>もどる / Back</span>
                 </button>
             </div>
         </div>
 
-        <div id="stageSelectScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-30 hidden">
-            <div class="bg-white p-3.5 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-amber-200">
-                <h1 class="text-sm font-black text-amber-600 mb-0.5">🧪 ステージ選択 (テストモード)</h1>
-                <p class="text-[7px] text-amber-500 font-semibold mb-2">Stage Selection (Test Mode)</p>
+        <div id="stageSelectScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden">
+            <div class="bg-white p-3 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-amber-200">
+                <h1 class="text-[10px] font-black text-amber-600 mb-0.5">🧪 ステージ選択 <span class="text-[6px] opacity-75">Test Stage Select</span></h1>
+                <p class="text-[6px] text-amber-500 font-semibold mb-1">モード / Mode: <span id="testModeDisplay" class="font-bold text-indigo-600">1人プレイ</span> <button onclick="toggleTestMode()" class="underline text-indigo-500 ml-1">(切替/Switch)</button></p>
                 <div class="grid grid-cols-1 gap-1 mb-2">
-                    <button onclick="startTestStage(1)" class="py-1 bg-blue-500 text-white font-bold rounded text-[10px] shadow">ステージ 1 (通常) / Normal</button>
-                    <button onclick="startTestStage(2)" class="py-1 bg-indigo-500 text-white font-bold rounded text-[10px] shadow">ステージ 2 (落とし穴) / Holes</button>
-                    <button onclick="startTestStage(3)" class="py-1 bg-amber-500 text-white font-bold rounded text-[10px] shadow">ステージ 3 (爆弾) / Bombs</button>
-                    <button onclick="startTestStage(4)" class="py-1 bg-purple-500 text-white font-bold rounded text-[10px] shadow">ステージ 4 (お邪魔) / Enemies</button>
-                    <button onclick="startTestStage(5)" class="py-1 bg-rose-500 text-white font-bold rounded text-[10px] shadow">ステージ 5 (ボス戦) / Boss Fight</button>
+                    <button onclick="startTestStage(1)" class="py-1 bg-blue-500 text-white font-bold rounded text-[7px] shadow">ステージ 1 (通常) / Normal</button>
+                    <button onclick="startTestStage(2)" class="py-1 bg-indigo-500 text-white font-bold rounded text-[7px] shadow">ステージ 2 (落とし穴) / Holes</button>
+                    <button onclick="startTestStage(3)" class="py-1 bg-amber-500 text-white font-bold rounded text-[7px] shadow">ステージ 3 (爆弾) / Bombs</button>
+                    <button onclick="startTestStage(4)" class="py-1 bg-purple-500 text-white font-bold rounded text-[7px] shadow">ステージ 4 (お邪魔) / Enemies</button>
+                    <button onclick="startTestStage(5)" class="py-1 bg-rose-500 text-white font-bold rounded text-[7px] shadow">ステージ 5 (ボス戦) / Boss Fight</button>
                 </div>
-                <button onclick="returnToMenu()" class="w-full py-1 bg-slate-600 text-white font-bold text-[10px] rounded">メニューに戻る / Menu</button>
+                <button onclick="returnToMenu()" class="w-full py-1 bg-slate-600 text-white font-bold text-[7px] rounded">メニューに戻る / Menu</button>
             </div>
         </div>
 
-        <div id="resultScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-30 hidden">
-            <div class="bg-white p-4 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-yellow-200">
-                <h1 id="resultTitle" class="text-base font-black text-yellow-500 mb-0.5">🏆 ステージクリア！</h1>
-                <p id="resultSubtitle" class="text-[7px] font-bold text-yellow-600 mb-1">Stage Cleared!</p>
-                <p id="resultMessage" class="text-[10px] font-bold text-slate-700 mb-2.5">おめでとう！ Great Job!</p>
-                <div class="flex flex-col gap-1.5">
-                    <button id="nextStageBtn" onclick="nextStage()" class="w-full py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-[11px] rounded shadow flex flex-col items-center">
-                        <span>➡️ つぎのステージへ / Next Stage</span>
+        <div id="resultScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden">
+            <div class="bg-white p-3 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-yellow-200">
+                <h1 id="resultTitle" class="text-xs font-black text-yellow-500 mb-0.5">🏆 ステージクリア！</h1>
+                <p id="resultSubtitle" class="text-[6px] font-bold text-yellow-600 mb-1">Stage Cleared!</p>
+                <p id="resultMessage" class="text-[7px] font-bold text-slate-700 mb-2">おめでとう！ Great Job!</p>
+                <div class="flex flex-col gap-1">
+                    <button id="nextStageBtn" onclick="nextStage()" class="w-full py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-[8px] rounded shadow flex flex-col items-center">
+                        <span>➡️ つぎのステージへ <span class="text-[5px] opacity-75">Next Stage</span></span>
                     </button>
-                    <button onclick="returnToMenu()" class="w-full py-1.5 bg-slate-700 text-white font-bold text-[10px] rounded shadow flex flex-col items-center">
-                        <span>🏠 メニューにもどる / Main Menu</span>
+                    <button onclick="returnToMenu()" class="w-full py-1.5 bg-slate-700 text-white font-bold text-[8px] rounded shadow flex flex-col items-center">
+                        <span>🏠 メニューにもどる <span class="text-[5px] opacity-75">Main Menu</span></span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Joystick Zones -->
     <div id="joystickZone1" class="joystick-zone">
         <div id="joystickKnob1" class="joystick-knob"></div>
     </div>
@@ -233,7 +185,9 @@
         let globalVolume = 0.8;
         let userTrashCount = 10;
         let currentDifficulty = 'beginner';
-        const arenaSize = 300; // Wider arena for relaxed pacing
+        let customP1Speed = 1.50;
+        let customP2Speed = 1.50;
+        const arenaSize = 1800;
 
         function initAudioContext() {
             if (!audioCtx) {
@@ -257,28 +211,38 @@
             document.getElementById('trashCountValue').innerText = val;
         }
 
+        function updateP1Speed(val) {
+            customP1Speed = parseFloat(val);
+            document.getElementById('p1SpeedVal').innerText = customP1Speed.toFixed(2);
+        }
+
+        function updateP2Speed(val) {
+            customP2Speed = parseFloat(val);
+            document.getElementById('p2SpeedVal').innerText = customP2Speed.toFixed(2);
+        }
+
         function setDifficulty(level) {
             currentDifficulty = level;
             ['beginner', 'intermediate', 'pro'].forEach(lvl => {
                 const btn = document.getElementById(`diff${lvl.charAt(0).toUpperCase() + lvl.slice(1)}`);
                 if (lvl === level) {
-                    btn.className = 'py-1 bg-indigo-600 text-white font-bold rounded text-[8px] flex flex-col items-center';
+                    btn.className = 'py-1 bg-indigo-600 text-white font-bold rounded text-[6px] flex flex-col items-center';
                 } else {
-                    btn.className = 'py-1 bg-slate-100 text-slate-700 font-bold rounded text-[8px] flex flex-col items-center';
+                    btn.className = 'py-1 bg-slate-100 text-slate-700 font-bold rounded text-[6px] flex flex-col items-center';
                 }
             });
 
-            // Auto-adjust speed based on difficulty preset
             if (level === 'beginner') {
-                setSpeed(1, 'beginner');
-                setSpeed(2, 'beginner');
+                customP1Speed = 1.50; customP2Speed = 1.50;
             } else if (level === 'intermediate') {
-                setSpeed(1, 'intermediate');
-                setSpeed(2, 'intermediate');
-            } else {
-                setSpeed(1, 'pro');
-                setSpeed(2, 'pro');
+                customP1Speed = 4.00; customP2Speed = 4.00;
+            } else if (level === 'pro') {
+                customP1Speed = 8.00; customP2Speed = 8.00;
             }
+            document.getElementById('p1SpeedSlider').value = customP1Speed;
+            document.getElementById('p1SpeedVal').innerText = customP1Speed.toFixed(2);
+            document.getElementById('p2SpeedSlider').value = customP2Speed;
+            document.getElementById('p2SpeedVal').innerText = customP2Speed.toFixed(2);
         }
 
         function playPopSound() {
@@ -288,21 +252,21 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(500, now);
-            osc.frequency.exponentialRampToValueAtTime(1000, now + 0.1);
-            gain.gain.setValueAtTime(0.7 * globalVolume, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+            osc.frequency.setValueAtTime(1400, now);
+            osc.frequency.exponentialRampToValueAtTime(3600, now + 0.2);
+            gain.gain.setValueAtTime(45000.0 * globalVolume, now); 
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start(now);
-            osc.stop(now + 0.1);
+            osc.stop(now + 0.2);
         }
 
         function playExplosionSound() {
             initAudioContext();
             if (!audioCtx) return;
             const now = audioCtx.currentTime;
-            const bufferSize = audioCtx.sampleRate * 2.0;
+            const bufferSize = audioCtx.sampleRate * 2.5;
             const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
             const data = buffer.getChannelData(0);
             for (let i = 0; i < bufferSize; i++) {
@@ -312,12 +276,12 @@
             noise.buffer = buffer;
             const filter = audioCtx.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.setValueAtTime(1800, now);
-            filter.frequency.linearRampToValueAtTime(60, now + 2.0);
+            filter.frequency.setValueAtTime(3000, now);
+            filter.frequency.linearRampToValueAtTime(30, now + 2.5);
 
             const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(35.0 * globalVolume, now);
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 2.0);
+            gain.gain.setValueAtTime(80.0 * globalVolume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
 
             noise.connect(filter);
             filter.connect(gain);
@@ -332,16 +296,16 @@
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'triangle';
-            osc.frequency.setValueAtTime(1000, now);
-            osc.frequency.exponentialRampToValueAtTime(80, now + 0.8);
+            osc.frequency.setValueAtTime(1800, now);
+            osc.frequency.exponentialRampToValueAtTime(40, now + 1.2);
 
-            gain.gain.setValueAtTime(1.5 * globalVolume, now);
-            gain.gain.linearRampToValueAtTime(0.001, now + 0.8);
+            gain.gain.setValueAtTime(60.0 * globalVolume, now);
+            gain.gain.linearRampToValueAtTime(0.001, now + 1.2);
 
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start(now);
-            osc.stop(now + 0.8);
+            osc.stop(now + 1.2);
         }
 
         let vacuumNode = null;
@@ -365,11 +329,11 @@
 
                 const filter = audioCtx.createBiquadFilter();
                 filter.type = 'bandpass';
-                filter.frequency.setValueAtTime(5000, audioCtx.currentTime);
-                filter.Q.setValueAtTime(8, audioCtx.currentTime);
+                filter.frequency.setValueAtTime(2500, audioCtx.currentTime);
+                filter.Q.setValueAtTime(3, audioCtx.currentTime);
 
                 vacuumGain = audioCtx.createGain();
-                vacuumGain.gain.setValueAtTime(0.6 * globalVolume, audioCtx.currentTime);
+                vacuumGain.gain.setValueAtTime(0.00000005 * globalVolume, audioCtx.currentTime);
 
                 vacuumNode.connect(filter);
                 filter.connect(vacuumGain);
@@ -399,8 +363,7 @@
         let boss = null;
         let fireballs = [];
         let effects = [];
-        let tireTracks = []; 
-        let brushTracks = []; // Side brush cleaning tracks
+        let tireTracks = [];
         
         let keys = {};
         let activeTouches = {};
@@ -413,25 +376,6 @@
 
         let clock = new THREE.Clock();
 
-        let speeds = { 1: 'beginner', 2: 'beginner' };
-        const speedValues = {
-            beginner: 0.02,       // 4-year-old friendly ultra slow
-            intermediate: 0.05,   // Standard kid speed
-            pro: 0.09             // Nimble pro speed
-        };
-
-        function setSpeed(playerNum, level) {
-            speeds[playerNum] = level;
-            ['beginner', 'intermediate', 'pro'].forEach(lvl => {
-                const btn = document.getElementById(`p${playerNum}Speed${lvl.charAt(0).toUpperCase() + lvl.slice(1)}`);
-                if (lvl === level) {
-                    btn.className = 'py-1 bg-indigo-600 text-white font-bold rounded text-[8px] flex flex-col items-center';
-                } else {
-                    btn.className = 'py-1 bg-slate-100 text-slate-700 font-bold rounded text-[8px] flex flex-col items-center';
-                }
-            });
-        }
-
         function openSettings() {
             document.getElementById('menuScreen').classList.add('hidden');
             document.getElementById('stageSelectScreen').classList.add('hidden');
@@ -441,6 +385,12 @@
         function closeSettings() {
             document.getElementById('settingsScreen').classList.add('hidden');
             document.getElementById('menuScreen').classList.remove('hidden');
+        }
+
+        let testModePlayerCount = 1;
+        function toggleTestMode() {
+            testModePlayerCount = testModePlayerCount === 1 ? 2 : 1;
+            document.getElementById('testModeDisplay').innerText = testModePlayerCount === 1 ? '1人プレイ' : '2人プレイ';
         }
 
         function checkSecretCode() {
@@ -456,7 +406,7 @@
 
         function startTestStage(stageNum) {
             initAudioContext();
-            playerMode = 1;
+            playerMode = testModePlayerCount;
             currentStage = stageNum;
 
             isGameStarted = true;
@@ -465,8 +415,15 @@
 
             document.getElementById('stageSelectScreen').classList.add('hidden');
             document.getElementById('hud').classList.remove('hidden');
-            document.getElementById('score2Container').classList.add('hidden');
-            document.getElementById('splitLine').style.display = 'none';
+            
+            const splitLine = document.getElementById('splitLine');
+            if (playerMode === 1) {
+                document.getElementById('score2Container').classList.add('hidden');
+                splitLine.style.display = 'none';
+            } else {
+                document.getElementById('score2Container').classList.remove('hidden');
+                splitLine.style.display = 'block';
+            }
 
             setupStage();
         }
@@ -474,10 +431,10 @@
         function initThree() {
             scene = new THREE.Scene();
             scene.background = new THREE.Color(0x1a1a2e);
-            scene.fog = new THREE.FogExp2(0x1a1a2e, 0.002);
+            scene.fog = new THREE.FogExp2(0x1a1a2e, 0.0003);
 
-            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(0, 110, 100);
+            camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 8000);
+            camera.position.set(0, 900, 750);
             camera.lookAt(0, 0, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -485,11 +442,11 @@
             renderer.shadowMap.enabled = true;
             document.body.appendChild(renderer.domElement);
 
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.75);
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.85);
             scene.add(ambientLight);
 
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.85);
-            dirLight.position.set(60, 140, 60);
+            const dirLight = new THREE.DirectionalLight(0xffffff, 0.95);
+            dirLight.position.set(400, 800, 400);
             dirLight.castShadow = true;
             scene.add(dirLight);
 
@@ -511,20 +468,20 @@
             const transWallMat = new THREE.MeshStandardMaterial({ color: 0x393e46, transparent: true, opacity: 0.15, roughness: 0.5 });
             const half = arenaSize / 2;
 
-            const north = new THREE.Mesh(new THREE.BoxGeometry(arenaSize, 8, 1), wallMat);
-            north.position.set(0, 4, -half);
+            const north = new THREE.Mesh(new THREE.BoxGeometry(arenaSize, 50, 10), wallMat);
+            north.position.set(0, 25, -half);
             scene.add(north);
 
-            const south = new THREE.Mesh(new THREE.BoxGeometry(arenaSize, 8, 1), transWallMat);
-            south.position.set(0, 4, half);
+            const south = new THREE.Mesh(new THREE.BoxGeometry(arenaSize, 50, 10), transWallMat);
+            south.position.set(0, 25, half);
             scene.add(south);
 
-            const west = new THREE.Mesh(new THREE.BoxGeometry(1, 8, arenaSize), wallMat);
-            west.position.set(-half, 4, 0);
+            const west = new THREE.Mesh(new THREE.BoxGeometry(10, 50, arenaSize), wallMat);
+            west.position.set(-half, 25, 0);
             scene.add(west);
 
-            const east = new THREE.Mesh(new THREE.BoxGeometry(1, 8, arenaSize), wallMat);
-            east.position.set(half, 4, 0);
+            const east = new THREE.Mesh(new THREE.BoxGeometry(10, 50, arenaSize), wallMat);
+            east.position.set(half, 25, 0);
             scene.add(east);
         }
 
@@ -595,8 +552,6 @@
             effects = [];
             tireTracks.forEach(tr => scene.remove(tr.mesh));
             tireTracks = [];
-            brushTracks.forEach(bt => scene.remove(bt.mesh));
-            brushTracks = [];
             if (boss) {
                 scene.remove(boss.mesh);
                 boss = null;
@@ -606,7 +561,7 @@
 
         function setupStage() {
             clearStageObjects();
-            document.getElementById('stageIndicator').innerHTML = `<span>ステージ ${currentStage}</span><span class='text-[7px] opacity-75 font-normal'>Stage ${currentStage}</span>`;
+            document.getElementById('stageIndicator').innerHTML = `<span>ステージ ${currentStage} <span class='text-[5px] opacity-75'>Stage ${currentStage}</span></span>`;
 
             if (currentStage === 5) {
                 document.getElementById('bossHpContainer').classList.remove('hidden');
@@ -617,29 +572,31 @@
             robots.forEach(r => scene.remove(r.mesh));
             robots = [];
             
-            // 1P: Boy style eyes & blue accents
             robots.push({
                 mesh: createRobotMesh(0x111111, 0x3b82f6, 'boy'),
-                pos: new THREE.Vector3(-45, 0, 0),
+                pos: new THREE.Vector3(-250, 0, 0),
                 velocity: new THREE.Vector3(0, 0, 0),
                 score: 0,
                 id: 1,
                 freezeTimer: 0,
                 invincibleTimer: 0,
-                flipTimer: 0
+                flipTimer: 0,
+                rotationAngle: 0,
+                radius: 45.0
             });
 
-            // 2P: Girl style eyes & red accents
             if (playerMode === 2) {
                 robots.push({
                     mesh: createRobotMesh(0xf8fafc, 0xef4444, 'girl'),
-                    pos: new THREE.Vector3(45, 0, 0),
+                    pos: new THREE.Vector3(250, 0, 0),
                     velocity: new THREE.Vector3(0, 0, 0),
                     score: 0,
                     id: 2,
                     freezeTimer: 0,
                     invincibleTimer: 0,
-                    flipTimer: 0
+                    flipTimer: 0,
+                    rotationAngle: 0,
+                    radius: 45.0
                 });
             }
             robots.forEach(r => {
@@ -659,182 +616,199 @@
 
         function createRobotMesh(bodyColor, lightColor, type) {
             const group = new THREE.Group();
+            group.scale.set(4.0, 4.0, 4.0);
             
-            // Scaled up robot body
-            const bodyGeo = new THREE.CylinderGeometry(4.5, 4.5, 1.8, 32);
+            const normalGroup = new THREE.Group();
+            normalGroup.name = 'normalGroup';
+
+            const bodyGeo = new THREE.CylinderGeometry(22.5, 22.5, 12.0, 32);
             const bodyMat = new THREE.MeshStandardMaterial({ color: bodyColor, metalness: 0.3, roughness: 0.4 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 0.9;
+            body.position.y = 6.0;
             body.castShadow = true;
-            group.add(body);
+            normalGroup.add(body);
 
-            // Bumper rim
-            const bumperGeo = new THREE.TorusGeometry(4.7, 0.3, 16, 32);
+            const bumperGeo = new THREE.TorusGeometry(23.5, 1.5, 16, 32);
             const bumperMat = new THREE.MeshStandardMaterial({ color: 0x94a3b8 });
             const bumper = new THREE.Mesh(bumperGeo, bumperMat);
             bumper.rotation.x = Math.PI / 2;
-            bumper.position.y = 0.9;
-            group.add(bumper);
+            bumper.position.y = 6.0;
+            normalGroup.add(bumper);
 
-            // Cute eyes on top
             const eyeGroup = new THREE.Group();
-            const eyeWhiteGeo = new THREE.SphereGeometry(0.7, 16, 16);
+            eyeGroup.name = 'eyeGroup';
+            const eyeWhiteGeo = new THREE.SphereGeometry(5.5, 16, 16);
             const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const pupilGeo = new THREE.SphereGeometry(0.35, 16, 16);
+            const pupilGeo = new THREE.SphereGeometry(3.0, 16, 16);
             const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+            const shineGeo = new THREE.SphereGeometry(1.3, 8, 8);
+            const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
             const leftEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
-            leftEyeWhite.position.set(-1.2, 2.0, -2.0);
+            leftEyeWhite.position.set(-8.0, 12.5, 11.0);
             const leftPupil = new THREE.Mesh(pupilGeo, pupilMat);
-            leftPupil.position.set(-1.2, 2.0, -2.5);
+            leftPupil.position.set(-8.0, 12.5, 14.0);
+            const leftShine = new THREE.Mesh(shineGeo, shineMat);
+            leftShine.position.set(-6.8, 14.2, 15.2);
 
             const rightEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
-            rightEyeWhite.position.set(1.2, 2.0, -2.0);
+            rightEyeWhite.position.set(8.0, 12.5, 11.0);
             const rightPupil = new THREE.Mesh(pupilGeo, pupilMat);
-            rightPupil.position.set(1.2, 2.0, -2.5);
+            rightPupil.position.set(8.0, 12.5, 14.0);
+            const rightShine = new THREE.Mesh(shineGeo, shineMat);
+            rightShine.position.set(6.8, 14.2, 15.2);
 
-            eyeGroup.add(leftEyeWhite); eyeGroup.add(leftPupil);
-            eyeGroup.add(rightEyeWhite); eyeGroup.add(rightPupil);
+            eyeGroup.add(leftEyeWhite); eyeGroup.add(leftPupil); eyeGroup.add(leftShine);
+            eyeGroup.add(rightEyeWhite); eyeGroup.add(rightPupil); eyeGroup.add(rightShine);
 
             if (type === 'girl') {
-                // Add cute eyelashes or bow vibe for girl robot
-                const eyelashGeo = new THREE.BoxGeometry(0.8, 0.15, 0.1);
+                const eyelashGeo = new THREE.BoxGeometry(7.0, 1.2, 0.5);
                 const eyelashMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
                 const leftLash = new THREE.Mesh(eyelashGeo, eyelashMat);
-                leftLash.position.set(-1.2, 2.6, -2.0);
+                leftLash.position.set(-8.0, 17.5, 11.0);
+                leftLash.rotation.z = 0.35;
                 const rightLash = new THREE.Mesh(eyelashGeo, eyelashMat);
-                rightLash.position.set(1.2, 2.6, -2.0);
+                rightLash.position.set(8.0, 17.5, 11.0);
+                rightLash.rotation.z = -0.35;
                 eyeGroup.add(leftLash); eyeGroup.add(rightLash);
+            } else {
+                const browGeo = new THREE.BoxGeometry(6.5, 1.2, 0.5);
+                const browMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
+                const leftBrow = new THREE.Mesh(browGeo, browMat);
+                leftBrow.position.set(-8.0, 18.0, 11.0);
+                leftBrow.rotation.z = -0.25;
+                const rightBrow = new THREE.Mesh(browGeo, browMat);
+                rightBrow.position.set(8.0, 18.0, 11.0);
+                rightBrow.rotation.z = 0.25;
+                eyeGroup.add(leftBrow); eyeGroup.add(rightBrow);
             }
-            group.add(eyeGroup);
+            normalGroup.add(eyeGroup);
 
-            // Status light
-            const lightGeo = new THREE.SphereGeometry(0.8, 16, 16);
+            const lightGeo = new THREE.SphereGeometry(2.5, 16, 16);
             const lightMat = new THREE.MeshBasicMaterial({ color: lightColor });
             const light = new THREE.Mesh(lightGeo, lightMat);
-            light.position.set(0, 2.2, 0);
-            group.add(light);
+            light.position.set(0, 14.5, 0);
+            normalGroup.add(light);
 
-            // Rotating side brushes (yellowish roots, white bristles)
             const brushRootMat = new THREE.MeshStandardMaterial({ color: 0xfacc15, roughness: 0.5 });
             const bristleMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
 
             const createBrushAssembly = () => {
                 const bg = new THREE.Group();
-                const root = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.2, 16), brushRootMat);
-                root.position.y = 0.1;
+                bg.scale.set(0.75 * 0.75, 0.75 * 0.75, 0.75 * 0.75); // Scaled down brush to 75%
+                const root = new THREE.Mesh(new THREE.CylinderGeometry(10.0, 10.0, 3.0, 16), brushRootMat);
+                root.position.y = 1.5;
                 bg.add(root);
-                // 3 white bristles
                 for (let i = 0; i < 3; i++) {
                     const angle = (i * Math.PI * 2) / 3;
-                    const bristle = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.1, 0.3), bristleMat);
-                    bristle.position.set(Math.cos(angle) * 0.7, 0.1, Math.sin(angle) * 0.7);
+                    const bristle = new THREE.Mesh(new THREE.BoxGeometry(24.0, 1.5, 5.0), bristleMat);
+                    bristle.position.set(Math.cos(angle) * 12.0, 1.5, Math.sin(angle) * 12.0);
                     bg.add(bristle);
                 }
                 return bg;
             };
 
             const leftBrush = createBrushAssembly();
-            leftBrush.position.set(-3.2, 0.2, -2.8);
+            leftBrush.position.set(-19.5, 1.0, 16.25);
             leftBrush.name = 'sideBrushLeft';
-            group.add(leftBrush);
+            normalGroup.add(leftBrush);
 
             const rightBrush = createBrushAssembly();
-            rightBrush.position.set(3.2, 0.2, -2.8);
+            rightBrush.position.set(19.5, 1.0, 16.25);
             rightBrush.name = 'sideBrushRight';
-            group.add(rightBrush);
+            normalGroup.add(rightBrush);
+            group.add(normalGroup);
 
-            // Underside details (visible when flipped over)
-            const underGroup = new THREE.Group();
-            underGroup.name = 'undercarriage';
-            
-            // 2 Wheels
-            const wheelGeo = new THREE.CylinderGeometry(1.0, 1.0, 0.5, 16);
+            const flippedGroup = new THREE.Group();
+            flippedGroup.name = 'flippedGroup';
+            flippedGroup.visible = false;
+
+            const underBaseGeo = new THREE.CylinderGeometry(22.5, 22.5, 12.0, 32);
+            const underBaseMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.5 });
+            const underBase = new THREE.Mesh(underBaseGeo, underBaseMat);
+            underBase.position.y = 6.0;
+            flippedGroup.add(underBase);
+
+            const portGeo = new THREE.BoxGeometry(27.5, 2.0, 15.0);
+            const portMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.3 });
+            const port1 = new THREE.Mesh(portGeo, portMat);
+            port1.position.set(0, 12.5, -2.0);
+            flippedGroup.add(port1);
+            const port2 = new THREE.Mesh(portGeo, portMat);
+            port2.position.set(0, 12.5, 2.0);
+            flippedGroup.add(port2);
+
+            const wheelGeo = new THREE.CylinderGeometry(6.25, 6.25, 3.5, 16);
             const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
-            
             const leftWheel = new THREE.Mesh(wheelGeo, wheelMat);
             leftWheel.rotation.z = Math.PI / 2;
-            leftWheel.position.set(-2.8, -1.0, 0.6);
-            underGroup.add(leftWheel);
-
+            leftWheel.position.set(-16.25, 12.0, -3.0);
+            flippedGroup.add(leftWheel);
             const rightWheel = new THREE.Mesh(wheelGeo, wheelMat);
             rightWheel.rotation.z = Math.PI / 2;
-            rightWheel.position.set(2.8, -1.0, 0.6);
-            underGroup.add(rightWheel);
+            rightWheel.position.set(16.25, 12.0, -3.0);
+            flippedGroup.add(rightWheel);
 
-            // Suction port with 2 bright green rollers
-            const portGeo = new THREE.BoxGeometry(4.0, 0.25, 2.5);
-            const portMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.3 });
-            const port = new THREE.Mesh(portGeo, portMat);
-            port.position.set(0, -0.95, -0.4);
-            underGroup.add(port);
+            const flipLeftBrush = createBrushAssembly();
+            flipLeftBrush.position.set(-19.5, 13.0, 16.25);
+            flippedGroup.add(flipLeftBrush);
+            const flipRightBrush = createBrushAssembly();
+            flipRightBrush.position.set(19.5, 13.0, 16.25);
+            flippedGroup.add(flipRightBrush);
 
-            const rollerGeo = new THREE.CylinderGeometry(0.4, 0.4, 3.6, 16);
-            const rollerMat = new THREE.MeshStandardMaterial({ color: 0x047857 });
-            const roller1 = new THREE.Mesh(rollerGeo, rollerMat);
-            roller1.rotation.z = Math.PI / 2;
-            roller1.position.set(0, -0.95, -1.0);
-            underGroup.add(roller1);
-
-            const roller2 = new THREE.Mesh(rollerGeo, rollerMat);
-            roller2.rotation.z = Math.PI / 2;
-            roller2.position.set(0, -0.95, 0.2);
-            underGroup.add(roller2);
-
-            underGroup.visible = false; 
-            group.add(underGroup);
-
+            group.add(flippedGroup);
             return group;
         }
 
         function getDifficultyCounts() {
-            if (currentDifficulty === 'beginner') return { holes: 3, bombs: 3, enemies: 3, bossCd: 2.2 };
-            if (currentDifficulty === 'intermediate') return { holes: 6, bombs: 6, enemies: 6, bossCd: 1.5 };
-            return { holes: 9, bombs: 9, enemies: 9, bossCd: 1.0 };
+            if (currentDifficulty === 'beginner') return { holes: 3, bombs: 3, enemies: 3, bossCd: 3.5 };
+            if (currentDifficulty === 'intermediate') return { holes: 6, bombs: 6, enemies: 6, bossCd: 2.5 };
+            return { holes: 9, bombs: 9, enemies: 9, bossCd: 1.8 };
         }
 
         function createHoles() {
             const counts = getDifficultyCounts();
-            const holeGeo = new THREE.CylinderGeometry(7.5, 7.5, 0.1, 32);
-            const holeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
+            const holeGeo = new THREE.CylinderGeometry(35.0, 35.0, 0.8, 32);
+            const holeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a, polygonOffset: true, polygonOffsetUnits: -6 });
 
             for (let i = 0; i < counts.holes; i++) {
                 const mesh = new THREE.Mesh(holeGeo, holeMat);
                 let x, z;
                 let attempts = 0;
                 do {
-                    x = (Math.random() - 0.5) * (arenaSize - 60);
-                    z = (Math.random() - 0.5) * (arenaSize - 60);
+                    x = (Math.random() - 0.5) * (arenaSize - 200);
+                    z = (Math.random() - 0.5) * (arenaSize - 200);
                     attempts++;
-                } while ((Math.hypot(x + 45, z) < 55 || Math.hypot(x - 45, z) < 55) && attempts < 50);
+                } while ((Math.hypot(x + 250, z) < 250 || Math.hypot(x - 250, z) < 250) && attempts < 50);
 
-                mesh.position.set(x, 0.05, z);
+                mesh.position.set(x, 0.8, z);
                 scene.add(mesh);
-                holes.push({ mesh: mesh, radius: 7.2 });
+                holes.push({ mesh: mesh, radius: 34.0 });
             }
         }
 
         function createBombs() {
             const counts = getDifficultyCounts();
             const bombGroup = new THREE.Group();
+            bombGroup.scale.set(1.5, 1.5, 1.5); // Scaled to 150%
             
-            const bodyGeo = new THREE.SphereGeometry(3.0, 16, 16);
+            const bodyGeo = new THREE.SphereGeometry(28.0, 16, 16);
             const bodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 3.0;
+            body.position.y = 28.0;
             bombGroup.add(body);
 
-            const fuseGeo = new THREE.CylinderGeometry(0.18, 0.18, 2.5, 8);
+            const fuseGeo = new THREE.CylinderGeometry(1.6, 1.6, 22.0, 8);
             const fuseMat = new THREE.MeshBasicMaterial({ color: 0xd97706 });
             const fuse = new THREE.Mesh(fuseGeo, fuseMat);
-            fuse.position.set(0.7, 5.5, 0);
+            fuse.position.set(6.0, 48.0, 0);
             fuse.rotation.z = -0.3;
             bombGroup.add(fuse);
 
-            const sparkGeo = new THREE.SphereGeometry(0.8, 8, 8);
+            const sparkGeo = new THREE.SphereGeometry(7.0, 8, 8);
             const sparkMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
             const spark = new THREE.Mesh(sparkGeo, sparkMat);
-            spark.position.set(1.4, 6.2, 0);
+            spark.position.set(11.0, 56.0, 0);
             bombGroup.add(spark);
 
             for (let i = 0; i < counts.bombs; i++) {
@@ -842,11 +816,11 @@
                 let x, z;
                 let attempts = 0;
                 do {
-                    x = (Math.random() - 0.5) * (arenaSize - 60);
-                    z = (Math.random() - 0.5) * (arenaSize - 60);
+                    x = (Math.random() - 0.5) * (arenaSize - 200);
+                    z = (Math.random() - 0.5) * (arenaSize - 200);
                     attempts++;
-                } while ((Math.hypot(x + 45, z) < 55 || Math.hypot(x - 45, z) < 55 || 
-                          holes.some(h => h.mesh.position.distanceTo(new THREE.Vector3(x,0,z)) < h.radius + 8)) && attempts < 50);
+                } while ((Math.hypot(x + 250, z) < 250 || Math.hypot(x - 250, z) < 250 || 
+                          holes.some(h => h.mesh.position.distanceTo(new THREE.Vector3(x,0,z)) < h.radius + 30)) && attempts < 50);
 
                 mesh.position.set(x, 0, z);
                 scene.add(mesh);
@@ -857,20 +831,20 @@
         function createEnemies() {
             const counts = getDifficultyCounts();
             const enemyGroup = new THREE.Group();
-            const bodyGeo = new THREE.SphereGeometry(2.6, 16, 16);
+            enemyGroup.scale.set(1.5, 1.5, 1.5); // Scaled to 150%
+            const bodyGeo = new THREE.SphereGeometry(28.0, 16, 16);
             const bodyMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.1, emissive: 0x990000 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 2.6;
+            body.position.y = 28.0;
             enemyGroup.add(body);
 
-            // Hyper spiky sea urchin spikes (fiery red)
-            const spikeGeo = new THREE.ConeGeometry(0.8, 4.2, 6);
+            const spikeGeo = new THREE.ConeGeometry(7.0, 34.0, 6);
             const spikeMat = new THREE.MeshStandardMaterial({ color: 0xff0000, metalness: 0.8, roughness: 0.2 });
             
             for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 4) {
                 for (let phi = 0.4; phi <= Math.PI; phi += Math.PI / 2) {
                     const s = new THREE.Mesh(spikeGeo, spikeMat);
-                    s.position.set(Math.cos(angle) * Math.sin(phi) * 2.6, 2.6 + Math.cos(phi) * 2.6, Math.sin(angle) * Math.sin(phi) * 2.6);
+                    s.position.set(Math.cos(angle) * Math.sin(phi) * 28.0, 28.0 + Math.cos(phi) * 28.0, Math.sin(angle) * Math.sin(phi) * 28.0);
                     s.lookAt(s.position.clone().multiplyScalar(2));
                     enemyGroup.add(s);
                 }
@@ -881,46 +855,61 @@
                 let x, z;
                 let attempts = 0;
                 do {
-                    x = (Math.random() - 0.5) * (arenaSize - 60);
-                    z = (Math.random() - 0.5) * (arenaSize - 60);
+                    x = (Math.random() - 0.5) * (arenaSize - 200);
+                    z = (Math.random() - 0.5) * (arenaSize - 200);
                     attempts++;
-                } while ((Math.hypot(x + 45, z) < 55 || Math.hypot(x - 45, z) < 55) && attempts < 50);
+                } while ((Math.hypot(x + 250, z) < 250 || Math.hypot(x - 250, z) < 250 ||
+                          holes.some(h => h.mesh.position.distanceTo(new THREE.Vector3(x,0,z)) < h.radius + 30)) && attempts < 50);
 
                 mesh.position.set(x, 0, z);
                 scene.add(mesh);
+
+                const angle = Math.random() * Math.PI * 2;
+                const dir = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle)).normalize(); // Strictly linear movement
+
                 enemies.push({
                     mesh: mesh,
-                    // Perfectly dodgeable fair speed (slower than robot)
-                    velocity: new THREE.Vector3((Math.random() - 0.5) * 0.035, 0, (Math.random() - 0.5) * 0.035)
+                    dir: dir,
+                    speed: 2.5
                 });
             }
         }
 
         function createBoss() {
             const group = new THREE.Group();
-            
-            const bodyGeo = new THREE.BoxGeometry(16, 10, 20);
-            const bodyMat = new THREE.MeshStandardMaterial({ color: 0x7c2d12, roughness: 0.4 });
-            const body = new THREE.Mesh(bodyGeo, bodyMat);
-            body.position.y = 5.0;
+            group.scale.set(0.5, 0.5, 0.5); // Scaled down gorilla boss to half size
+            const gorillaMat = new THREE.MeshStandardMaterial({ color: 0x332211, roughness: 0.6 });
+            const faceMat = new THREE.MeshStandardMaterial({ color: 0x554433, roughness: 0.5 });
+
+            const bodyGeo = new THREE.BoxGeometry(260, 200, 240);
+            const body = new THREE.Mesh(bodyGeo, gorillaMat);
+            body.position.y = 100;
+            body.castShadow = true;
             group.add(body);
 
-            const headGeo = new THREE.BoxGeometry(9, 8, 11);
-            const headMat = new THREE.MeshStandardMaterial({ color: 0x9a3412, roughness: 0.3 });
-            const head = new THREE.Mesh(headGeo, headMat);
-            head.position.set(0, 9.0, -12.0);
+            const headGeo = new THREE.BoxGeometry(160, 130, 150);
+            const head = new THREE.Mesh(headGeo, faceMat);
+            head.position.set(0, 230, -20);
             group.add(head);
 
-            const eyeGeo = new THREE.SphereGeometry(1.2, 16, 16);
+            const armGeo = new THREE.BoxGeometry(70, 220, 70);
+            const leftArm = new THREE.Mesh(armGeo, gorillaMat);
+            leftArm.position.set(-165, 110, -20);
+            group.add(leftArm);
+            const rightArm = new THREE.Mesh(armGeo, gorillaMat);
+            rightArm.position.set(165, 110, -20);
+            group.add(rightArm);
+
+            const eyeGeo = new THREE.SphereGeometry(14.0, 16, 16);
             const eyeMat = new THREE.MeshBasicMaterial({ color: 0xff0000 });
             const leftEye = new THREE.Mesh(eyeGeo, eyeMat);
-            leftEye.position.set(-2.5, 10.0, -15);
+            leftEye.position.set(-40, 250, -96);
             const rightEye = new THREE.Mesh(eyeGeo, eyeMat);
-            rightEye.position.set(2.5, 10.0, -15);
+            rightEye.position.set(40, 250, -96);
             group.add(leftEye);
             group.add(rightEye);
 
-            group.position.set(0, 0, -110);
+            group.position.set(0, 0, -700);
             scene.add(group);
 
             const bossMaxHp = userTrashCount * 10;
@@ -939,15 +928,15 @@
             if (!boss) return;
             const pct = Math.max(0, (boss.hp / boss.maxHp) * 100);
             document.getElementById('bossHpBar').style.width = pct + '%';
-            document.getElementById('bossHpText').innerText = `👑 ボス糸くず (HP: ${Math.ceil(boss.hp)}/${boss.maxHp})`;
+            document.getElementById('bossHpText').innerHTML = `👑 ゴリラボス (HP: ${Math.ceil(boss.hp)}/${boss.maxHp}) <span class='text-[5px] opacity-75'>Boss Threat</span>`;
         }
 
         function createTrashes() {
             const colors = [0xef4444, 0x3b82f6, 0xeab308, 0x10b981, 0xec4899];
             const geometries = [
-                () => new THREE.BoxGeometry(3.8, 3.8, 3.8),
-                () => new THREE.SphereGeometry(2.4, 16, 16),
-                () => new THREE.ConeGeometry(2.4, 4.2, 16)
+                () => new THREE.BoxGeometry(18.0, 18.0, 18.0),
+                () => new THREE.SphereGeometry(11.0, 16, 16),
+                () => new THREE.ConeGeometry(11.0, 19.0, 16)
             ];
 
             for (let i = 0; i < userTrashCount; i++) {
@@ -962,20 +951,19 @@
                 let attempts = 0;
                 while (!valid && attempts < 100) {
                     attempts++;
-                    x = (Math.random() - 0.5) * (arenaSize - 50);
-                    z = (Math.random() - 0.5) * (arenaSize - 50);
+                    x = (Math.random() - 0.5) * (arenaSize - 200);
+                    z = (Math.random() - 0.5) * (arenaSize - 200);
                     
                     valid = true;
-                    // Never spawn trash on top of holes
                     for (let hole of holes) {
-                        if (hole.mesh.position.distanceTo(new THREE.Vector3(x, 0, z)) < hole.radius + 5.0) {
+                        if (hole.mesh.position.distanceTo(new THREE.Vector3(x, 0, z)) < hole.radius + 20.0) {
                             valid = false;
                             break;
                         }
                     }
                 }
 
-                mesh.position.set(x, 1.4, z);
+                mesh.position.set(x, 9.0, z);
                 mesh.castShadow = true;
 
                 scene.add(mesh);
@@ -983,53 +971,38 @@
             }
         }
 
-        function spawn3DExplosion(pos, colorHex = 0xff3300, scale = 1.0) {
-            const expGeo = new THREE.SphereGeometry(4.0 * scale, 16, 16);
+        function spawn3DфераExplosion(pos, colorHex = 0xff3300, scale = 1.0) {
+            const expGeo = new THREE.SphereGeometry(20.0 * scale * 2.0, 16, 16);
             const expMat = new THREE.MeshBasicMaterial({ color: colorHex, transparent: true, opacity: 0.95 });
             const mesh = new THREE.Mesh(expGeo, expMat);
             mesh.position.copy(pos);
-            mesh.position.y = 2.0;
+            mesh.position.y = 9.0;
             scene.add(mesh);
             effects.push({ mesh: mesh, timer: 0.6, type: 'explosion' });
         }
 
         function spawn3DFlash(pos, colorHex = 0xffffff) {
-            const flashGeo = new THREE.RingGeometry(1.5, 7.0, 32);
+            const flashGeo = new THREE.RingGeometry(10.0, 35.0, 32);
             const flashMat = new THREE.MeshBasicMaterial({ color: colorHex, side: THREE.DoubleSide, transparent: true, opacity: 0.9 });
             const mesh = new THREE.Mesh(flashGeo, flashMat);
             mesh.position.copy(pos);
-            mesh.position.y = 0.2;
+            mesh.position.y = 1.2;
             mesh.rotation.x = -Math.PI / 2;
             scene.add(mesh);
             effects.push({ mesh: mesh, timer: 0.5, type: 'flash' });
         }
 
         function spawnTireTrack(pos) {
-            const trackGeo = new THREE.PlaneGeometry(1.4, 2.5);
-            const trackMat = new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.35 });
+            const trackGeo = new THREE.PlaneGeometry(3.0, 6.0);
+            const trackMat = new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.4 });
             const mesh = new THREE.Mesh(trackGeo, trackMat);
             mesh.position.copy(pos);
-            mesh.position.y = 0.02;
+            mesh.position.y = 0.2;
             mesh.rotation.x = -Math.PI / 2;
             scene.add(mesh);
-            tireTracks.push({ mesh: mesh, opacity: 0.35 });
-            if (tireTracks.length > 60) {
+            tireTracks.push({ mesh: mesh, opacity: 0.4 });
+            if (tireTracks.length > 150) {
                 const old = tireTracks.shift();
-                scene.remove(old.mesh);
-            }
-        }
-
-        function spawnBrushTrack(pos) {
-            const brushTrackGeo = new THREE.PlaneGeometry(0.9, 0.9);
-            const brushTrackMat = new THREE.MeshBasicMaterial({ color: 0xfacc15, transparent: true, opacity: 0.25 });
-            const mesh = new THREE.Mesh(brushTrackGeo, brushTrackMat);
-            mesh.position.copy(pos);
-            mesh.position.y = 0.03;
-            mesh.rotation.x = -Math.PI / 2;
-            scene.add(mesh);
-            brushTracks.push({ mesh: mesh, opacity: 0.25 });
-            if (brushTracks.length > 60) {
-                const old = brushTracks.shift();
                 scene.remove(old.mesh);
             }
         }
@@ -1138,7 +1111,6 @@
             const friction = Math.pow(0.82, speedFactor); 
             let movingAny = false;
 
-            // Fade tire & brush tracks
             for (let i = tireTracks.length - 1; i >= 0; i--) {
                 const tr = tireTracks[i];
                 tr.opacity -= delta * 0.04;
@@ -1149,24 +1121,14 @@
                 }
             }
 
-            for (let i = brushTracks.length - 1; i >= 0; i--) {
-                const bt = brushTracks[i];
-                bt.opacity -= delta * 0.04;
-                bt.mesh.material.opacity = Math.max(0, bt.opacity);
-                if (bt.opacity <= 0) {
-                    scene.remove(bt.mesh);
-                    brushTracks.splice(i, 1);
-                }
-            }
-
             for (let i = effects.length - 1; i >= 0; i--) {
                 const ef = effects[i];
                 ef.timer -= delta;
                 if (ef.type === 'explosion') {
-                    ef.mesh.scale.addScalar(delta * 12);
+                    ef.mesh.scale.addScalar(delta * 14);
                     ef.mesh.material.opacity = ef.timer * 2;
                 } else if (ef.type === 'flash') {
-                    ef.mesh.scale.addScalar(delta * 10);
+                    ef.mesh.scale.addScalar(delta * 12);
                     ef.mesh.material.opacity = ef.timer * 2;
                 }
                 if (ef.timer <= 0) {
@@ -1180,45 +1142,44 @@
                 boss.actionTimer += delta;
                 boss.fireCooldown += delta;
 
-                // Gentle warp timing so kids can anticipate
-                if (boss.actionTimer > 4.5) {
+                if (boss.actionTimer > 5.0) {
                     boss.actionTimer = 0;
-                    boss.pos.x = (Math.random() - 0.5) * (arenaSize - 80);
-                    boss.pos.z = (Math.random() - 0.5) * (arenaSize - 80);
+                    boss.pos.x = (Math.random() - 0.5) * (arenaSize - 300);
+                    boss.pos.z = (Math.random() - 0.5) * (arenaSize - 300);
                     boss.mesh.position.copy(boss.pos);
                     boss.mesh.position.y = 0;
                 }
 
                 if (boss.fireCooldown > counts.bossCd && boss.hp > 0) {
                     boss.fireCooldown = 0;
-                    const fireballGeo = new THREE.SphereGeometry(2.2, 16, 16);
+                    const fireballGeo = new THREE.SphereGeometry(72.0, 16, 16); // 2x boss fireball size
                     const fireballMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
                     const fireballMesh = new THREE.Mesh(fireballGeo, fireballMat);
                     fireballMesh.position.copy(boss.pos);
-                    fireballMesh.position.y = 2.2;
+                    fireballMesh.position.y = 35.0;
                     scene.add(fireballMesh);
 
                     const targetPos = robots[0].pos;
                     const fireDir = new THREE.Vector3().subVectors(targetPos, boss.pos).normalize();
-                    fireballs.push({ mesh: fireballMesh, velocity: fireDir.multiplyScalar(0.4) });
+                    fireballs.push({ mesh: fireballMesh, velocity: fireDir.multiplyScalar(3.0) });
                 }
             }
 
             for (let i = fireballs.length - 1; i >= 0; i--) {
                 const fb = fireballs[i];
                 fb.mesh.position.addScaledVector(fb.velocity, speedFactor);
-                fb.mesh.position.y = 2.2;
+                fb.mesh.position.y = 35.0;
 
                 robots.forEach(robot => {
-                    if (robot.pos.distanceTo(fb.mesh.position) < 4.8 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
+                    if (robot.pos.distanceTo(fb.mesh.position) < 55.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
                         playExplosionSound();
-                        spawn3DExplosion(fb.mesh.position, 0xff5500, 1.4);
+                        spawn3DфераExplosion(fb.mesh.position, 0xff5500, 2.5);
                         robot.freezeTimer = 1.5;
                         robot.invincibleTimer = 3.0;
-                        robot.flipTimer = 1.5; // Flip over!
+                        robot.flipTimer = 1.5;
 
                         const pushDir = new THREE.Vector3().subVectors(robot.pos, fb.mesh.position).normalize();
-                        robot.velocity.addScaledVector(pushDir, 5.0);
+                        robot.velocity.addScaledVector(pushDir, 15.0);
 
                         scene.remove(fb.mesh);
                         fireballs.splice(i, 1);
@@ -1226,37 +1187,63 @@
                 });
             }
 
+            // Strictly linear movement for wandering enemies
             enemies.forEach(en => {
-                en.mesh.position.addScaledVector(en.velocity, speedFactor);
+                const limit = arenaSize / 2 - 50;
+                en.mesh.position.addScaledVector(en.dir, (en.speed * 2.5) * speedFactor);
                 en.mesh.position.y = 0;
-                const limit = arenaSize / 2 - 8;
-                if (Math.abs(en.mesh.position.x) > limit) en.velocity.x *= -1;
-                if (Math.abs(en.mesh.position.z) > limit) en.velocity.z *= -1;
+
+                if (Math.abs(en.mesh.position.x) > limit || Math.abs(en.mesh.position.z) > limit) {
+                    en.dir.negate();
+                    en.mesh.position.addScaledVector(en.dir, 10);
+                }
             });
 
             robots.forEach((robot, idx) => {
-                const accelRate = speedValues[speeds[robot.id]];
-                const acceleration = accelRate * speedFactor;
+                const maxSpeed = (idx === 0) ? customP1Speed : customP2Speed;
+                const acceleration = maxSpeed * 0.35 * speedFactor;
 
-                robot.pos.y = 0; // Strict Y lock
-
-                // Rotate side brushes for Roomba realism
+                const normalGroup = robot.mesh.getObjectByName('normalGroup');
+                const flippedGroup = robot.mesh.getObjectByName('flippedGroup');
                 const leftB = robot.mesh.getObjectByName('sideBrushLeft');
                 const rightB = robot.mesh.getObjectByName('sideBrushRight');
+                
                 if (leftB && rightB) {
-                    leftB.rotation.y += 0.25 * speedFactor;
-                    rightB.rotation.y -= 0.25 * speedFactor;
+                    leftB.rotation.y += 3.5 * speedFactor;
+                    rightB.rotation.y -= 3.5 * speedFactor;
                 }
 
-                // Handle flip state (upside down view showing underside details)
-                const under = robot.mesh.getObjectByName('undercarriage');
+                const eyeGroup = robot.mesh.getObjectByName('eyeGroup');
+                if (eyeGroup) {
+                    const blinkCycle = (Date.now() % 4000) / 4000;
+                    eyeGroup.scale.y = blinkCycle < 0.1 ? 0.15 : 1.0;
+                }
+
                 if (robot.flipTimer > 0) {
                     robot.flipTimer -= delta;
-                    robot.mesh.rotation.z = Math.PI; // Flip upside down!
-                    if (under) under.visible = true;
+                    normalGroup.visible = false;
+                    flippedGroup.visible = true;
+
+                    const totalTime = 1.5;
+                    const progress = 1.0 - (robot.flipTimer / totalTime);
+                    
+                    // Exaggerated cartoon flip: 1.5 somersaults (くるくるっ！どてっ！)
+                    if (progress < 0.8) {
+                        const jumpP = progress / 0.8;
+                        robot.pos.y = Math.sin(jumpP * Math.PI) * 150.0; // elevated nicely
+                        robot.mesh.rotation.x = jumpP * Math.PI * 3.0; // 1.5 rotations
+                        robot.mesh.rotation.z = 0;
+                    } else {
+                        robot.pos.y = 1.0; // slight elevation to prevent Z-fighting
+                        robot.mesh.rotation.x = Math.PI; // completely upside down
+                        robot.mesh.rotation.z = 0;
+                    }
                 } else {
+                    robot.pos.y = 0;
+                    robot.mesh.rotation.x = 0;
                     robot.mesh.rotation.z = 0;
-                    if (under) under.visible = false;
+                    normalGroup.visible = true;
+                    flippedGroup.visible = false;
                 }
 
                 if (robot.invincibleTimer > 0) {
@@ -1269,7 +1256,6 @@
                 if (robot.freezeTimer > 0) {
                     robot.freezeTimer -= delta;
                     robot.velocity.set(0, 0, 0);
-                    robot.pos.y = 0;
                     robot.mesh.position.copy(robot.pos);
                     return;
                 }
@@ -1304,19 +1290,35 @@
                 if (dir.lengthSq() > 0) {
                     dir.normalize();
                     robot.velocity.addScaledVector(dir, acceleration);
+                    
+                    if (robot.velocity.length() > maxSpeed) {
+                        robot.velocity.setLength(maxSpeed);
+                    }
+
                     movingAny = true;
-                    // Leave tire and brush track marks periodically
-                    if (Math.random() < 0.3) {
-                        spawnTireTrack(robot.pos);
-                        spawnBrushTrack(robot.pos);
+
+                    const targetAngle = Math.atan2(dir.x, dir.z);
+                    let angleDiff = targetAngle - robot.rotationAngle;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    robot.rotationAngle += angleDiff * 0.5;
+                    if (robot.flipTimer <= 0) {
+                        robot.mesh.rotation.y = robot.rotationAngle;
+                    }
+
+                    if (Math.random() < 0.3 && robot.flipTimer <= 0) {
+                        const leftOffset = new THREE.Vector3(-15, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), robot.rotationAngle);
+                        const rightOffset = new THREE.Vector3(15, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), robot.rotationAngle);
+                        spawnTireTrack(robot.pos.clone().add(leftOffset));
+                        spawnTireTrack(robot.pos.clone().add(rightOffset));
                     }
                 }
 
                 robot.velocity.multiplyScalar(friction);
                 robot.pos.addScaledVector(robot.velocity, speedFactor);
-                robot.pos.y = 0;
+                if (robot.flipTimer <= 0) robot.pos.y = 0;
 
-                const limit = arenaSize / 2 - 4;
+                const limit = arenaSize / 2 - 30;
                 if (robot.pos.x < -limit) { robot.pos.x = -limit; robot.velocity.x *= -0.5; }
                 if (robot.pos.x > limit) { robot.pos.x = limit; robot.velocity.x *= -0.5; }
                 if (robot.pos.z < -limit) { robot.pos.z = -limit; robot.velocity.z *= -0.5; }
@@ -1324,32 +1326,31 @@
 
                 robot.mesh.position.copy(robot.pos);
 
-                if (currentStage >= 2) {
+                if (currentStage >= 2 && robot.flipTimer <= 0) {
                     holes.forEach(hole => {
                         if (robot.pos.distanceTo(hole.mesh.position) < hole.radius && robot.invincibleTimer <= 0) {
                             playCartoonFallSound();
-                            spawn3DFlash(hole.mesh.position, 0xffffff); // White flash fall effect
-                            robot.pos.set(idx === 0 ? -45 : 45, 0, 0);
+                            spawn3DFlash(hole.mesh.position, 0xffffff);
+                            robot.pos.set(idx === 0 ? -250 : 250, 0, 0);
                             robot.velocity.set(0, 0, 0);
                             robot.invincibleTimer = 1.5;
                         }
                     });
                 }
 
-                // Bomb collision: reliably vanishes and triggers explosion
-                if (currentStage >= 3) {
+                if (currentStage >= 3 && robot.flipTimer <= 0) {
                     for (let bIndex = bombs.length - 1; bIndex >= 0; bIndex--) {
                         const bomb = bombs[bIndex];
-                        if (robot.pos.distanceTo(bomb.mesh.position) < 5.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
+                        if (robot.pos.distanceTo(bomb.mesh.position) < 55.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
                             playExplosionSound();
-                            spawn3DExplosion(bomb.mesh.position, 0xff2200, 2.0);
+                            spawn3DфераExplosion(bomb.mesh.position, 0xff2200, 3.0);
                             
                             robot.freezeTimer = 1.5;
                             robot.invincibleTimer = 3.0;
-                            robot.flipTimer = 1.5; // Flip over!
+                            robot.flipTimer = 1.5;
 
                             const pushDir = new THREE.Vector3().subVectors(robot.pos, bomb.mesh.position).normalize();
-                            robot.velocity.addScaledVector(pushDir, 5.5);
+                            robot.velocity.addScaledVector(pushDir, 15.0);
 
                             scene.remove(bomb.mesh);
                             bombs.splice(bIndex, 1);
@@ -1358,33 +1359,33 @@
                     }
                 }
 
-                if (currentStage >= 4) {
+                if (currentStage >= 4 && robot.flipTimer <= 0) {
                     enemies.forEach(en => {
-                        if (robot.pos.distanceTo(en.mesh.position) < 4.8 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
+                        if (robot.pos.distanceTo(en.mesh.position) < 55.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
                             playExplosionSound();
-                            spawn3DExplosion(en.mesh.position, 0xff0000, 1.5);
+                            spawn3DфераExplosion(en.mesh.position, 0xff0000, 2.5);
 
-                            robot.freezeTimer = 1.2;
-                            robot.invincibleTimer = 2.5;
-                            robot.flipTimer = 1.2; // Flip over!
+                            robot.freezeTimer = 1.5;
+                            robot.invincibleTimer = 3.0;
+                            robot.flipTimer = 1.5;
 
                             const pushDir = new THREE.Vector3().subVectors(robot.pos, en.mesh.position).normalize();
-                            robot.velocity.addScaledVector(pushDir, 5.0);
+                            robot.velocity.addScaledVector(pushDir, 15.0);
                         }
                     });
                 }
 
-                if (currentStage === 5 && boss) {
+                if (currentStage === 5 && boss && robot.flipTimer <= 0) {
                     const distToBoss = robot.pos.distanceTo(boss.pos);
-                    if (distToBoss < 11.0 && robot.freezeTimer <= 0) {
+                    if (distToBoss < 120.0 && robot.freezeTimer <= 0) {
                         if (boss.hp > 0) {
-                            const attackPower = 1 + robot.score; // Collected trash boosts attack power!
+                            const attackPower = 1 + robot.score;
                             boss.hp -= attackPower;
                             playPopSound();
-                            spawn3DExplosion(boss.pos, 0xffaa00, 2.0);
+                            spawn3DфераExplosion(boss.pos, 0xffaa00, 4.0);
 
                             const pushDir = new THREE.Vector3().subVectors(robot.pos, boss.pos).normalize();
-                            robot.velocity.addScaledVector(pushDir, 5.5);
+                            robot.velocity.addScaledVector(pushDir, 15.0);
 
                             updateBossHpBar();
 
@@ -1408,17 +1409,21 @@
                 const r1 = robots[0];
                 const r2 = robots[1];
                 const dist = r1.pos.distanceTo(r2.pos);
-                if (dist < 7.0) {
+                const minDistance = r1.radius + r2.radius;
+                if (dist < minDistance) {
+                    const overlap = minDistance - dist;
                     const pushDir = new THREE.Vector3().subVectors(r1.pos, r2.pos).normalize();
-                    r1.velocity.addScaledVector(pushDir, 0.2);
-                    r2.velocity.addScaledVector(pushDir, -0.2);
+                    r1.pos.addScaledVector(pushDir, overlap * 0.5);
+                    r2.pos.addScaledVector(pushDir, -overlap * 0.5);
+                    r1.velocity.addScaledVector(pushDir, 2.0);
+                    r2.velocity.addScaledVector(pushDir, -2.0);
                 }
             }
 
             trashes.forEach(trash => {
                 if (!trash.collected) {
                     robots.forEach(robot => {
-                        if (robot.pos.distanceTo(trash.mesh.position) < 4.8) {
+                        if (robot.pos.distanceTo(trash.mesh.position) < 45.0) {
                             trash.collected = true;
                             scene.remove(trash.mesh);
                             robot.score++;
@@ -1434,8 +1439,9 @@
                 robots.forEach(r => centerPos.add(r.pos));
                 centerPos.divideScalar(robots.length);
 
-                camera.position.x += (centerPos.x - camera.position.x) * 0.05;
-                camera.position.z += (centerPos.z + 75 - camera.position.z) * 0.05;
+                camera.position.x += (centerPos.x - camera.position.x) * 0.06;
+                camera.position.z += (centerPos.z + 1250 - camera.position.z) * 0.06;
+                camera.position.y = 1400;
                 camera.lookAt(centerPos.x, 0, centerPos.z);
             }
 
@@ -1451,10 +1457,10 @@
 
         function updateHUD() {
             if (playerMode === 1) {
-                document.getElementById('score1Text').innerText = `ゴミ: ${robots[0].score} / ${userTrashCount}`;
+                document.getElementById('score1Text').innerHTML = `ゴミ: ${robots[0].score} / ${userTrashCount} <span class='text-[5px] opacity-75'>Trash</span>`;
             } else {
-                document.getElementById('score1Text').innerText = `1P: ${robots[0].score}`;
-                document.getElementById('score2Text').innerText = `2P: ${robots[1].score}`;
+                document.getElementById('score1Text').innerHTML = `1P: ${robots[0].score}`;
+                document.getElementById('score2Text').innerHTML = `2P: ${robots[1].score}`;
             }
         }
 
@@ -1470,12 +1476,12 @@
             if (currentStage < totalStages) {
                 resultTitle.innerText = `🏆 ステージ ${currentStage} クリア！`;
                 resultSubtitle.innerText = `Stage ${currentStage} Cleared!`;
-                resultMessage.innerText = `おめでとう！つぎのステージにすすもう！ / Great job! Proceed!`;
+                resultMessage.innerText = `おめでとう！つぎのステージにすすもう！ / Great job!`;
                 nextBtn.style.display = 'block';
             } else {
                 resultTitle.innerText = `👑 全ステージクリア！大はんじょう！`;
                 resultSubtitle.innerText = `All Stages Completed!`;
-                resultMessage.innerText = `おそうじマスターだね！おめでとう！ / You are the Cleaning Master!`;
+                resultMessage.innerText = `おそうじマスターだね！おめでとう！ / Cleaning Master!`;
                 nextBtn.style.display = 'none';
             }
         }
@@ -1493,3 +1499,4 @@
     </script>
 </body>
 </html>
+```
