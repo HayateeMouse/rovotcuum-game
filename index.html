@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -10,7 +9,7 @@
     <style>
         body { margin: 0; overflow: hidden; background: #1a1a2e; font-family: 'Inter', sans-serif; user-select: none; }
         canvas { display: block; width: 100vw; height: 100vh; }
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 4px; box-sizing: border-box; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; box-sizing: border-box; }
         .interactive { pointer-events: auto; }
         
         .split-line {
@@ -19,15 +18,15 @@
         }
 
         .joystick-zone { 
-            position: absolute; width: 120px; height: 120px; 
+            position: absolute; width: 140px; height: 140px; 
             background: rgba(255,255,255,0.2); border-radius: 50%; 
             touch-action: none; display: none; 
             justify-content: center; align-items: center; z-index: 10; 
             pointer-events: none;
         }
         .joystick-knob { 
-            width: 50px; height: 50px; background: rgba(255,255,255,0.8); 
-            border-radius: 50%; box-shadow: 0 4px 6px rgba(0,0,0,0.2); pointer-events: none; 
+            width: 60px; height: 60px; background: rgba(255,255,255,0.85); 
+            border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.3); pointer-events: none; 
         }
     </style>
 </head>
@@ -35,138 +34,138 @@
     <div id="splitLine" class="split-line"></div>
 
     <div class="ui-layer">
-        <div id="hud" class="flex justify-between items-center w-full max-w-xl mx-auto bg-white/90 backdrop-blur-md px-2.5 py-1 rounded shadow-md hidden">
-            <div class="flex items-center gap-1.5">
-                <button onclick="openSettings()" class="interactive px-1.5 py-0.5 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded text-[8px] shadow flex flex-col items-center leading-tight">
-                    <span>⚙️ 設定 <span class="text-[5px] opacity-75">Settings</span></span>
+        <div id="hud" class="flex justify-between items-center w-full max-w-6xl mx-auto bg-white/95 backdrop-blur-md px-8 py-5 rounded-3xl shadow-2xl hidden border-2 border-slate-100">
+            <div class="flex items-center gap-5">
+                <button onclick="openSettings()" class="interactive px-6 py-3 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded-2xl text-lg shadow-lg flex flex-col items-center leading-tight transition transform active:scale-95">
+                    <span>⚙️ 設定 <span class="text-xs opacity-75">Settings</span></span>
                 </button>
-                <div id="stageIndicator" class="bg-indigo-600 text-white px-2 py-0.5 rounded font-bold text-[8px] shadow flex flex-col items-center leading-tight">
-                    <span>ステージ 1 <span class="text-[5px] opacity-75">Stage 1</span></span>
+                <div id="stageIndicator" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold text-lg shadow-lg flex flex-col items-center leading-tight">
+                    <span>ステージ 1 <span class="text-xs opacity-75">Stage 1</span></span>
                 </div>
             </div>
             
-            <div id="bossHpContainer" class="hidden flex-col items-center bg-rose-100 border border-rose-500 px-2 py-0.5 rounded shadow">
-                <span id="bossHpText" class="text-[7px] font-black text-rose-700">👑 ゴリラボス (HP: 100/100) <span class="text-[5px] opacity-75">Boss Threat</span></span>
-                <div class="w-20 bg-slate-200 h-1.5 rounded-full overflow-hidden mt-0.5 border border-rose-300">
+            <div id="bossHpContainer" class="hidden flex-col items-center bg-rose-50 border-3 border-rose-500 px-8 py-3 rounded-2xl shadow-xl">
+                <span id="bossHpText" class="text-lg font-black text-rose-700">👑 ゴリラボス (HP: 100/100) <span class="text-xs opacity-75">Boss Threat</span></span>
+                <div class="w-60 bg-slate-200 h-3.5 rounded-full overflow-hidden mt-2 border border-rose-300 shadow-inner">
                     <div id="bossHpBar" class="bg-rose-600 h-full w-full transition-all duration-100"></div>
                 </div>
             </div>
 
-            <div id="score1Container" class="flex items-center gap-1">
-                <div class="w-2 h-2 rounded-full bg-slate-900 border-2 border-white shadow"></div>
+            <div id="score1Container" class="flex items-center gap-5 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 shadow">
+                <div class="w-6 h-6 rounded-full bg-slate-900 border-2 border-white shadow"></div>
                 <div class="flex flex-col leading-tight">
-                    <span id="score1Text" class="text-[8px] font-bold text-slate-800">ゴミ: 0/10 <span class="text-[5px] opacity-75">Trash</span></span>
+                    <span id="score1Text" class="text-lg font-bold text-slate-800">ゴミ: 0/10 <span class="text-xs opacity-75">Trash</span></span>
                 </div>
             </div>
-            <div id="score2Container" class="flex items-center gap-1 hidden">
+            <div id="score2Container" class="flex items-center gap-5 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 shadow hidden">
                 <div class="flex flex-col leading-tight text-right">
-                    <span id="score2Text" class="text-[8px] font-bold text-slate-800">2P: 0 <span class="text-[5px] opacity-75">P2</span></span>
+                    <span id="score2Text" class="text-lg font-bold text-slate-800">2P: 0 <span class="text-xs opacity-75">P2</span></span>
                 </div>
-                <div class="w-2 h-2 rounded-full bg-white border-2 border-slate-900 shadow"></div>
+                <div class="w-6 h-6 rounded-full bg-white border-2 border-slate-900 shadow"></div>
             </div>
         </div>
 
         <div id="menuScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-30">
-            <div class="bg-white p-3 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-indigo-100">
-                <h1 class="text-xs font-black text-indigo-600 mb-0.5">🧹 おそうじロボット大作戦</h1>
-                <p class="text-[7px] font-bold text-indigo-400 mb-2">Robot Cleaning Adventure</p>
+            <div class="bg-white p-12 rounded-3xl shadow-2xl text-center max-w-xl w-full mx-4 border-2 border-indigo-100">
+                <h1 class="text-4xl font-black text-indigo-600 mb-2">🧹 おそうじロボット大作戦</h1>
+                <p class="text-lg font-bold text-indigo-400 mb-10">Robot Cleaning Adventure</p>
                 
-                <div class="flex flex-col gap-1.5">
-                    <button onclick="startGame(1)" class="w-full py-1.5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-[9px] rounded-lg shadow hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
-                        <span>👤 1人で あそぶ <span class="text-[6px] opacity-80 font-normal">Single Player</span></span>
+                <div class="flex flex-col gap-5">
+                    <button onclick="startGame(1)" class="w-full py-5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-xl rounded-2xl shadow-xl hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
+                        <span>👤 1人で あそぶ <span class="text-base opacity-90 font-normal">Single Player</span></span>
                     </button>
-                    <button onclick="startGame(2)" class="w-full py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-[9px] rounded-lg shadow hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
-                        <span>👥 2人で たいせん <span class="text-[6px] opacity-80 font-normal">2-Player Versus</span></span>
+                    <button onclick="startGame(2)" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xl rounded-2xl shadow-xl hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
+                        <span>👥 2人で たいせん <span class="text-base opacity-90 font-normal">2-Player Versus</span></span>
                     </button>
-                    <button onclick="openSettings()" class="w-full py-1.5 bg-slate-200 text-slate-700 font-bold text-[8px] rounded-lg shadow hover:bg-slate-300 transition flex flex-col items-center">
-                        <span>⚙️ 設定・テスト <span class="text-[6px] opacity-70 font-normal">Settings & Test</span></span>
+                    <button onclick="openSettings()" class="w-full py-4 bg-slate-200 text-slate-700 font-bold text-lg rounded-2xl shadow hover:bg-slate-300 transition flex flex-col items-center">
+                        <span>⚙️ 設定・テスト <span class="text-base opacity-80 font-normal">Settings & Test</span></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="settingsScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden overflow-y-auto py-2">
-            <div class="bg-white p-3 rounded-xl shadow-2xl text-left max-w-xs w-full mx-4 border-2 border-slate-200">
-                <h1 class="text-[10px] font-black text-slate-800 mb-0.5 text-center">⚙️ 設定画面 <span class="text-[6px] opacity-70">Settings</span></h1>
+        <div id="settingsScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden overflow-y-auto py-12">
+            <div class="bg-white p-10 rounded-3xl shadow-2xl text-left max-w-2xl w-full mx-4 border-2 border-slate-200">
+                <h1 class="text-2xl font-black text-slate-800 mb-6 text-center">⚙️ 設定画面 <span class="text-lg opacity-70">Settings</span></h1>
                 
-                <div class="mb-1">
-                    <label class="block text-[7px] font-bold text-slate-700 mb-0.5">🔊 音量 / Volume: <span id="volumeValue">80</span>%</label>
-                    <input type="range" id="volumeSlider" min="0" max="100" value="80" oninput="updateVolume(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+                <div class="mb-6">
+                    <label class="block text-lg font-bold text-slate-700 mb-2">🔊 音量 / Volume: <span id="volumeValue">80</span>%</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="80" oninput="updateVolume(this.value)" class="w-full accent-indigo-600 cursor-pointer h-3">
                 </div>
 
-                <div class="mb-1">
-                    <label class="block text-[7px] font-bold text-slate-700 mb-0.5">🗑️ ゴミの数 / Trash (10〜200): <span id="trashCountValue">10</span>個</label>
-                    <input type="range" id="trashCountSlider" min="10" max="200" step="10" value="10" oninput="updateTrashCountSetting(this.value)" class="w-full accent-indigo-600 cursor-pointer">
+                <div class="mb-6">
+                    <label class="block text-lg font-bold text-slate-700 mb-2">🗑️ ゴミの数 / Trash (10〜200): <span id="trashCountValue">10</span>個</label>
+                    <input type="range" id="trashCountSlider" min="10" max="200" step="10" value="10" oninput="updateTrashCountSetting(this.value)" class="w-full accent-indigo-600 cursor-pointer h-3">
                 </div>
 
-                <div class="mb-1">
-                    <label class="block text-[7px] font-bold text-slate-700 mb-0.5">🎮 難易度 / Speed Preset</label>
-                    <div class="grid grid-cols-3 gap-1">
-                        <button id="diffBeginner" onclick="setDifficulty('beginner')" class="py-1 bg-indigo-600 text-white font-bold rounded text-[6px] flex flex-col items-center">
-                            <span>初級（4歳）</span><span class="text-[5px] opacity-80">Beginner</span>
+                <div class="mb-6">
+                    <label class="block text-lg font-bold text-slate-700 mb-2">🎮 難易度 / Difficulty Preset</label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <button id="diffBeginner" onclick="setDifficulty('beginner')" class="py-4 bg-indigo-600 text-white font-bold rounded-2xl text-base flex flex-col items-center shadow-md">
+                            <span>初級（4歳）</span><span class="text-xs opacity-90">Beginner</span>
                         </button>
-                        <button id="diffIntermediate" onclick="setDifficulty('intermediate')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[6px] flex flex-col items-center">
-                            <span>中級（小学生）</span><span class="text-[5px] opacity-80">Intermediate</span>
+                        <button id="diffIntermediate" onclick="setDifficulty('intermediate')" class="py-4 bg-slate-100 text-slate-700 font-bold rounded-2xl text-base flex flex-col items-center shadow-md">
+                            <span>中級（小学生）</span><span class="text-xs opacity-80">Intermediate</span>
                         </button>
-                        <button id="diffPro" onclick="setDifficulty('pro')" class="py-1 bg-slate-100 text-slate-700 font-bold rounded text-[6px] flex flex-col items-center">
-                            <span>上級（プロ）</span><span class="text-[5px] opacity-80">Advanced</span>
+                        <button id="diffPro" onclick="setDifficulty('pro')" class="py-4 bg-slate-100 text-slate-700 font-bold rounded-2xl text-base flex flex-col items-center shadow-md">
+                            <span>上級（プロ）</span><span class="text-xs opacity-80">Advanced</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="mb-1 p-1.5 bg-slate-50 rounded border border-slate-200">
-                    <label class="block text-[7px] font-bold text-blue-600 mb-0.5">🤖 1P スピード / 1P Speed (1.5-10.0): <span id="p1SpeedVal">1.50</span></label>
-                    <input type="range" id="p1SpeedSlider" min="1.5" max="10.0" step="0.1" value="1.50" oninput="updateP1Speed(this.value)" class="w-full accent-blue-600 cursor-pointer">
+                <div class="mb-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                    <label class="block text-lg font-bold text-blue-600 mb-2">🤖 1P スピード (1.5-10.0): <span id="p1SpeedVal">1.50</span></label>
+                    <input type="range" id="p1SpeedSlider" min="1.5" max="10.0" step="0.1" value="1.50" oninput="updateP1Speed(this.value)" class="w-full accent-blue-600 cursor-pointer h-3">
                     
-                    <label class="block text-[7px] font-bold text-red-600 mt-1 mb-0.5">🤖 2P スピード / 2P Speed (1.5-10.0): <span id="p2SpeedVal">1.50</span></label>
-                    <input type="range" id="p2SpeedSlider" min="1.5" max="10.0" step="0.1" value="1.50" oninput="updateP2Speed(this.value)" class="w-full accent-red-600 cursor-pointer">
+                    <label class="block text-lg font-bold text-red-600 mt-5 mb-2">🤖 2P スピード (1.5-10.0): <span id="p2SpeedVal">1.50</span></label>
+                    <input type="range" id="p2SpeedSlider" min="1.5" max="10.0" step="0.1" value="1.50" oninput="updateP2Speed(this.value)" class="w-full accent-red-600 cursor-pointer h-3">
                 </div>
 
-                <div class="mb-1.5 pt-1 border-t border-slate-200 flex items-center justify-between">
+                <div class="mb-6 pt-5 border-t border-slate-200 flex items-center justify-between">
                     <div>
-                        <span class="block text-[6px] font-bold text-slate-500">🧪 テストコード (061606)</span>
-                        <span class="text-[5px] text-slate-400">Secret Test Code</span>
+                        <span class="block text-lg font-bold text-slate-500">🧪 テストコード (061606)</span>
+                        <span class="text-base text-slate-400">Secret Test Code</span>
                     </div>
-                    <div class="flex gap-1 items-center">
-                        <input type="password" id="secretCodeInput" maxlength="6" placeholder="******" class="w-14 px-1 py-0.5 border border-slate-300 rounded text-center tracking-widest font-bold text-slate-700 text-[8px]">
-                        <button onclick="checkSecretCode()" class="px-2 py-0.5 bg-slate-800 text-white font-bold rounded hover:bg-slate-700 text-[7px] shadow">
-                            <span>認証 <span class="text-[5px] opacity-75">Auth</span></span>
+                    <div class="flex gap-4 items-center">
+                        <input type="password" id="secretCodeInput" maxlength="6" placeholder="******" class="w-36 px-4 py-3 border border-slate-300 rounded-2xl text-center tracking-widest font-bold text-slate-700 text-lg shadow-inner">
+                        <button onclick="checkSecretCode()" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-2xl hover:bg-slate-700 text-base shadow">
+                            <span>認証 <span class="text-xs opacity-75">Auth</span></span>
                         </button>
                     </div>
                 </div>
 
-                <button onclick="closeSettings()" class="w-full py-1 bg-indigo-600 text-white font-bold text-[8px] rounded shadow hover:bg-indigo-700 flex flex-col items-center">
+                <button onclick="closeSettings()" class="w-full py-4 bg-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg hover:bg-indigo-700 flex flex-col items-center">
                     <span>もどる / Back</span>
                 </button>
             </div>
         </div>
 
         <div id="stageSelectScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden">
-            <div class="bg-white p-3 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-amber-200">
-                <h1 class="text-[10px] font-black text-amber-600 mb-0.5">🧪 ステージ選択 <span class="text-[6px] opacity-75">Test Stage Select</span></h1>
-                <p class="text-[6px] text-amber-500 font-semibold mb-1">モード / Mode: <span id="testModeDisplay" class="font-bold text-indigo-600">1人プレイ</span> <button onclick="toggleTestMode()" class="underline text-indigo-500 ml-1">(切替/Switch)</button></p>
-                <div class="grid grid-cols-1 gap-1 mb-2">
-                    <button onclick="startTestStage(1)" class="py-1 bg-blue-500 text-white font-bold rounded text-[7px] shadow">ステージ 1 (通常) / Normal</button>
-                    <button onclick="startTestStage(2)" class="py-1 bg-indigo-500 text-white font-bold rounded text-[7px] shadow">ステージ 2 (落とし穴) / Holes</button>
-                    <button onclick="startTestStage(3)" class="py-1 bg-amber-500 text-white font-bold rounded text-[7px] shadow">ステージ 3 (爆弾) / Bombs</button>
-                    <button onclick="startTestStage(4)" class="py-1 bg-purple-500 text-white font-bold rounded text-[7px] shadow">ステージ 4 (お邪魔) / Enemies</button>
-                    <button onclick="startTestStage(5)" class="py-1 bg-rose-500 text-white font-bold rounded text-[7px] shadow">ステージ 5 (ボス戦) / Boss Fight</button>
+            <div class="bg-white p-10 rounded-3xl shadow-2xl text-center max-w-lg w-full mx-4 border-2 border-amber-200">
+                <h1 class="text-2xl font-black text-amber-600 mb-2">🧪 ステージ選択 <span class="text-lg opacity-75">Test Stage Select</span></h1>
+                <p class="text-lg text-amber-500 font-semibold mb-6">モード / Mode: <span id="testModeDisplay" class="font-bold text-indigo-600">1人プレイ</span> <button onclick="toggleTestMode()" class="underline text-indigo-500 ml-2">(切替/Switch)</button></p>
+                <div class="grid grid-cols-1 gap-4 mb-6">
+                    <button onclick="startTestStage(1)" class="py-4 bg-blue-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 1 (通常) / Normal</button>
+                    <button onclick="startTestStage(2)" class="py-4 bg-indigo-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 2 (落とし穴) / Holes</button>
+                    <button onclick="startTestStage(3)" class="py-4 bg-amber-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 3 (爆弾) / Bombs</button>
+                    <button onclick="startTestStage(4)" class="py-4 bg-purple-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 4 (お邪魔) / Enemies</button>
+                    <button onclick="startTestStage(5)" class="py-4 bg-rose-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 5 (ボス戦) / Boss Fight</button>
                 </div>
-                <button onclick="returnToMenu()" class="w-full py-1 bg-slate-600 text-white font-bold text-[7px] rounded">メニューに戻る / Menu</button>
+                <button onclick="returnToMenu()" class="w-full py-4 bg-slate-600 text-white font-bold text-lg rounded-2xl">メニューに戻る / Menu</button>
             </div>
         </div>
 
         <div id="resultScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden">
-            <div class="bg-white p-3 rounded-xl shadow-2xl text-center max-w-xs w-full mx-4 border-2 border-yellow-200">
-                <h1 id="resultTitle" class="text-xs font-black text-yellow-500 mb-0.5">🏆 ステージクリア！</h1>
-                <p id="resultSubtitle" class="text-[6px] font-bold text-yellow-600 mb-1">Stage Cleared!</p>
-                <p id="resultMessage" class="text-[7px] font-bold text-slate-700 mb-2">おめでとう！ Great Job!</p>
-                <div class="flex flex-col gap-1">
-                    <button id="nextStageBtn" onclick="nextStage()" class="w-full py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-[8px] rounded shadow flex flex-col items-center">
-                        <span>➡️ つぎのステージへ <span class="text-[5px] opacity-75">Next Stage</span></span>
+            <div class="bg-white p-12 rounded-3xl shadow-2xl text-center max-w-lg w-full mx-4 border-2 border-yellow-200">
+                <h1 id="resultTitle" class="text-2xl font-black text-yellow-500 mb-2">🏆 ステージクリア！</h1>
+                <p id="resultSubtitle" class="text-lg font-bold text-yellow-600 mb-3">Stage Cleared!</p>
+                <p id="resultMessage" class="text-lg font-bold text-slate-700 mb-8">おめでとう！ Great Job!</p>
+                <div class="flex flex-col gap-5">
+                    <button id="nextStageBtn" onclick="nextStage()" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-lg rounded-2xl shadow-xl flex flex-col items-center">
+                        <span>➡️ つぎのステージへ <span class="text-base opacity-80">Next Stage</span></span>
                     </button>
-                    <button onclick="returnToMenu()" class="w-full py-1.5 bg-slate-700 text-white font-bold text-[8px] rounded shadow flex flex-col items-center">
-                        <span>🏠 メニューにもどる <span class="text-[5px] opacity-75">Main Menu</span></span>
+                    <button onclick="returnToMenu()" class="w-full py-5 bg-slate-700 text-white font-bold text-lg rounded-2xl shadow-xl flex flex-col items-center">
+                        <span>🏠 メニューにもどる <span class="text-base opacity-80">Main Menu</span></span>
                     </button>
                 </div>
             </div>
@@ -226,18 +225,18 @@
             ['beginner', 'intermediate', 'pro'].forEach(lvl => {
                 const btn = document.getElementById(`diff${lvl.charAt(0).toUpperCase() + lvl.slice(1)}`);
                 if (lvl === level) {
-                    btn.className = 'py-1 bg-indigo-600 text-white font-bold rounded text-[6px] flex flex-col items-center';
+                    btn.className = 'py-4 bg-indigo-600 text-white font-bold rounded-2xl text-base flex flex-col items-center shadow-md';
                 } else {
-                    btn.className = 'py-1 bg-slate-100 text-slate-700 font-bold rounded text-[6px] flex flex-col items-center';
+                    btn.className = 'py-4 bg-slate-100 text-slate-700 font-bold rounded-2xl text-base flex flex-col items-center shadow-md';
                 }
             });
 
             if (level === 'beginner') {
                 customP1Speed = 1.50; customP2Speed = 1.50;
             } else if (level === 'intermediate') {
-                customP1Speed = 4.00; customP2Speed = 4.00;
+                customP1Speed = 4.50; customP2Speed = 4.50;
             } else if (level === 'pro') {
-                customP1Speed = 8.00; customP2Speed = 8.00;
+                customP1Speed = 8.50; customP2Speed = 8.50;
             }
             document.getElementById('p1SpeedSlider').value = customP1Speed;
             document.getElementById('p1SpeedVal').innerText = customP1Speed.toFixed(2);
@@ -253,13 +252,13 @@
             const gain = audioCtx.createGain();
             osc.type = 'sine';
             osc.frequency.setValueAtTime(1400, now);
-            osc.frequency.exponentialRampToValueAtTime(3600, now + 0.2);
-            gain.gain.setValueAtTime(45000.0 * globalVolume, now); 
-            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+            osc.frequency.exponentialRampToValueAtTime(3600, now + 0.25);
+            gain.gain.setValueAtTime(800000.0 * globalVolume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start(now);
-            osc.stop(now + 0.2);
+            osc.stop(now + 0.25);
         }
 
         function playExplosionSound() {
@@ -333,7 +332,7 @@
                 filter.Q.setValueAtTime(3, audioCtx.currentTime);
 
                 vacuumGain = audioCtx.createGain();
-                vacuumGain.gain.setValueAtTime(0.00000005 * globalVolume, audioCtx.currentTime);
+                vacuumGain.gain.setValueAtTime(0.000000001 * globalVolume, audioCtx.currentTime);
 
                 vacuumNode.connect(filter);
                 filter.connect(vacuumGain);
@@ -434,7 +433,7 @@
             scene.fog = new THREE.FogExp2(0x1a1a2e, 0.0003);
 
             camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 8000);
-            camera.position.set(0, 900, 750);
+            camera.position.set(0, 700, 600);
             camera.lookAt(0, 0, 0);
 
             renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -561,7 +560,7 @@
 
         function setupStage() {
             clearStageObjects();
-            document.getElementById('stageIndicator').innerHTML = `<span>ステージ ${currentStage} <span class='text-[5px] opacity-75'>Stage ${currentStage}</span></span>`;
+            document.getElementById('stageIndicator').innerHTML = `<span>ステージ ${currentStage} <span class='text-xs opacity-75'>Stage ${currentStage}</span></span>`;
 
             if (currentStage === 5) {
                 document.getElementById('bossHpContainer').classList.remove('hidden');
@@ -582,7 +581,7 @@
                 invincibleTimer: 0,
                 flipTimer: 0,
                 rotationAngle: 0,
-                radius: 45.0
+                radius: 22.4 * 0.8 * 0.8
             });
 
             if (playerMode === 2) {
@@ -596,7 +595,7 @@
                     invincibleTimer: 0,
                     flipTimer: 0,
                     rotationAngle: 0,
-                    radius: 45.0
+                    radius: 22.4 * 0.8 * 0.8
                 });
             }
             robots.forEach(r => {
@@ -616,7 +615,7 @@
 
         function createRobotMesh(bodyColor, lightColor, type) {
             const group = new THREE.Group();
-            group.scale.set(4.0, 4.0, 4.0);
+            group.scale.set(3.2 * 0.8 * 0.8, 3.2 * 0.8 * 0.8, 3.2 * 0.8 * 0.8);
             
             const normalGroup = new THREE.Group();
             normalGroup.name = 'normalGroup';
@@ -637,48 +636,48 @@
 
             const eyeGroup = new THREE.Group();
             eyeGroup.name = 'eyeGroup';
-            const eyeWhiteGeo = new THREE.SphereGeometry(5.5, 16, 16);
+            const eyeWhiteGeo = new THREE.SphereGeometry(6.5, 16, 16);
             const eyeWhiteMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-            const pupilGeo = new THREE.SphereGeometry(3.0, 16, 16);
+            const pupilGeo = new THREE.SphereGeometry(3.5, 16, 16);
             const pupilMat = new THREE.MeshBasicMaterial({ color: 0x0f172a });
-            const shineGeo = new THREE.SphereGeometry(1.3, 8, 8);
+            const shineGeo = new THREE.SphereGeometry(1.5, 8, 8);
             const shineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
 
             const leftEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
-            leftEyeWhite.position.set(-8.0, 12.5, 11.0);
+            leftEyeWhite.position.set(-9.0, 13.0, 11.5);
             const leftPupil = new THREE.Mesh(pupilGeo, pupilMat);
-            leftPupil.position.set(-8.0, 12.5, 14.0);
+            leftPupil.position.set(-9.0, 13.0, 14.5);
             const leftShine = new THREE.Mesh(shineGeo, shineMat);
-            leftShine.position.set(-6.8, 14.2, 15.2);
+            leftShine.position.set(-7.6, 14.8, 15.8);
 
             const rightEyeWhite = new THREE.Mesh(eyeWhiteGeo, eyeWhiteMat);
-            rightEyeWhite.position.set(8.0, 12.5, 11.0);
+            rightEyeWhite.position.set(9.0, 13.0, 11.5);
             const rightPupil = new THREE.Mesh(pupilGeo, pupilMat);
-            rightPupil.position.set(8.0, 12.5, 14.0);
+            rightPupil.position.set(9.0, 13.0, 14.5);
             const rightShine = new THREE.Mesh(shineGeo, shineMat);
-            rightShine.position.set(6.8, 14.2, 15.2);
+            rightShine.position.set(7.6, 14.8, 15.8);
 
             eyeGroup.add(leftEyeWhite); eyeGroup.add(leftPupil); eyeGroup.add(leftShine);
             eyeGroup.add(rightEyeWhite); eyeGroup.add(rightPupil); eyeGroup.add(rightShine);
 
             if (type === 'girl') {
-                const eyelashGeo = new THREE.BoxGeometry(7.0, 1.2, 0.5);
+                const eyelashGeo = new THREE.BoxGeometry(8.0, 1.5, 0.5);
                 const eyelashMat = new THREE.MeshBasicMaterial({ color: 0xef4444 });
                 const leftLash = new THREE.Mesh(eyelashGeo, eyelashMat);
-                leftLash.position.set(-8.0, 17.5, 11.0);
+                leftLash.position.set(-9.0, 18.5, 11.5);
                 leftLash.rotation.z = 0.35;
                 const rightLash = new THREE.Mesh(eyelashGeo, eyelashMat);
-                rightLash.position.set(8.0, 17.5, 11.0);
+                rightLash.position.set(9.0, 18.5, 11.5);
                 rightLash.rotation.z = -0.35;
                 eyeGroup.add(leftLash); eyeGroup.add(rightLash);
             } else {
-                const browGeo = new THREE.BoxGeometry(6.5, 1.2, 0.5);
+                const browGeo = new THREE.BoxGeometry(7.5, 1.5, 0.5);
                 const browMat = new THREE.MeshBasicMaterial({ color: 0x3b82f6 });
                 const leftBrow = new THREE.Mesh(browGeo, browMat);
-                leftBrow.position.set(-8.0, 18.0, 11.0);
+                leftBrow.position.set(-9.0, 19.0, 11.5);
                 leftBrow.rotation.z = -0.25;
                 const rightBrow = new THREE.Mesh(browGeo, browMat);
-                rightBrow.position.set(8.0, 18.0, 11.0);
+                rightBrow.position.set(9.0, 19.0, 11.5);
                 rightBrow.rotation.z = 0.25;
                 eyeGroup.add(leftBrow); eyeGroup.add(rightBrow);
             }
@@ -695,7 +694,7 @@
 
             const createBrushAssembly = () => {
                 const bg = new THREE.Group();
-                bg.scale.set(0.75 * 0.75, 0.75 * 0.75, 0.75 * 0.75); // Scaled down brush to 75%
+                bg.scale.set(0.75 * 0.75, 0.75 * 0.75, 0.75 * 0.75); // Exactly 75% brush size
                 const root = new THREE.Mesh(new THREE.CylinderGeometry(10.0, 10.0, 3.0, 16), brushRootMat);
                 root.position.y = 1.5;
                 bg.add(root);
@@ -729,31 +728,31 @@
             underBase.position.y = 6.0;
             flippedGroup.add(underBase);
 
-            const portGeo = new THREE.BoxGeometry(27.5, 2.0, 15.0);
+            const portGeo = new THREE.BoxGeometry(27.5, 2.5, 15.0);
             const portMat = new THREE.MeshStandardMaterial({ color: 0x10b981, roughness: 0.3 });
             const port1 = new THREE.Mesh(portGeo, portMat);
-            port1.position.set(0, 12.5, -2.0);
+            port1.position.set(0, 12.8, -3.0);
             flippedGroup.add(port1);
             const port2 = new THREE.Mesh(portGeo, portMat);
-            port2.position.set(0, 12.5, 2.0);
+            port2.position.set(0, 12.8, 3.0);
             flippedGroup.add(port2);
 
-            const wheelGeo = new THREE.CylinderGeometry(6.25, 6.25, 3.5, 16);
+            const wheelGeo = new THREE.CylinderGeometry(6.5, 6.5, 3.5, 16);
             const wheelMat = new THREE.MeshStandardMaterial({ color: 0x111111 });
             const leftWheel = new THREE.Mesh(wheelGeo, wheelMat);
             leftWheel.rotation.z = Math.PI / 2;
-            leftWheel.position.set(-16.25, 12.0, -3.0);
+            leftWheel.position.set(-16.25, 12.5, -3.0);
             flippedGroup.add(leftWheel);
             const rightWheel = new THREE.Mesh(wheelGeo, wheelMat);
             rightWheel.rotation.z = Math.PI / 2;
-            rightWheel.position.set(16.25, 12.0, -3.0);
+            rightWheel.position.set(16.25, 12.5, -3.0);
             flippedGroup.add(rightWheel);
 
             const flipLeftBrush = createBrushAssembly();
-            flipLeftBrush.position.set(-19.5, 13.0, 16.25);
+            flipLeftBrush.position.set(-19.5, 13.5, 16.25);
             flippedGroup.add(flipLeftBrush);
             const flipRightBrush = createBrushAssembly();
-            flipRightBrush.position.set(19.5, 13.0, 16.25);
+            flipRightBrush.position.set(19.5, 13.5, 16.25);
             flippedGroup.add(flipRightBrush);
 
             group.add(flippedGroup);
@@ -768,7 +767,8 @@
 
         function createHoles() {
             const counts = getDifficultyCounts();
-            const holeGeo = new THREE.CylinderGeometry(35.0, 35.0, 0.8, 32);
+            // Hole size doubled (2x) based on previous instruction
+            const holeGeo = new THREE.CylinderGeometry(140.0 * 2.0 * 0.5 * 0.5 * 0.5 * 2.0 * 2.0, 140.0 * 2.0 * 0.5 * 0.5 * 0.5 * 2.0 * 2.0, 0.8, 32);
             const holeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a, polygonOffset: true, polygonOffsetUnits: -6 });
 
             for (let i = 0; i < counts.holes; i++) {
@@ -781,16 +781,17 @@
                     attempts++;
                 } while ((Math.hypot(x + 250, z) < 250 || Math.hypot(x - 250, z) < 250) && attempts < 50);
 
-                mesh.position.set(x, 0.8, z);
+                mesh.position.set(x, 1.2, z);
                 scene.add(mesh);
-                holes.push({ mesh: mesh, radius: 34.0 });
+                holes.push({ mesh: mesh, radius: 136.0 * 0.5 * 0.5 * 0.5 * 2.0 * 2.0 });
             }
         }
 
         function createBombs() {
             const counts = getDifficultyCounts();
             const bombGroup = new THREE.Group();
-            bombGroup.scale.set(1.5, 1.5, 1.5); // Scaled to 150%
+            // Bombs doubled (2x) per latest instruction
+            bombGroup.scale.set(1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0, 1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0, 1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0);
             
             const bodyGeo = new THREE.SphereGeometry(28.0, 16, 16);
             const bodyMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.2 });
@@ -831,7 +832,8 @@
         function createEnemies() {
             const counts = getDifficultyCounts();
             const enemyGroup = new THREE.Group();
-            enemyGroup.scale.set(1.5, 1.5, 1.5); // Scaled to 150%
+            // Enemies doubled (2x) per latest instruction
+            enemyGroup.scale.set(1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0, 1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0, 1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0);
             const bodyGeo = new THREE.SphereGeometry(28.0, 16, 16);
             const bodyMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.1, emissive: 0x990000 });
             const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -865,19 +867,19 @@
                 scene.add(mesh);
 
                 const angle = Math.random() * Math.PI * 2;
-                const dir = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle)).normalize(); // Strictly linear movement
+                const dir = new THREE.Vector3(Math.cos(angle), 0, Math.sin(angle)).normalize();
 
                 enemies.push({
                     mesh: mesh,
                     dir: dir,
-                    speed: 2.5
+                    speed: 2.0
                 });
             }
         }
 
         function createBoss() {
             const group = new THREE.Group();
-            group.scale.set(0.5, 0.5, 0.5); // Scaled down gorilla boss to half size
+            group.scale.set(0.5, 0.5, 0.5);
             const gorillaMat = new THREE.MeshStandardMaterial({ color: 0x332211, roughness: 0.6 });
             const faceMat = new THREE.MeshStandardMaterial({ color: 0x554433, roughness: 0.5 });
 
@@ -928,15 +930,15 @@
             if (!boss) return;
             const pct = Math.max(0, (boss.hp / boss.maxHp) * 100);
             document.getElementById('bossHpBar').style.width = pct + '%';
-            document.getElementById('bossHpText').innerHTML = `👑 ゴリラボス (HP: ${Math.ceil(boss.hp)}/${boss.maxHp}) <span class='text-[5px] opacity-75'>Boss Threat</span>`;
+            document.getElementById('bossHpText').innerHTML = `👑 ゴリラボス (HP: ${Math.ceil(boss.hp)}/${boss.maxHp}) <span class='text-xs opacity-75'>Boss Threat</span>`;
         }
 
         function createTrashes() {
             const colors = [0xef4444, 0x3b82f6, 0xeab308, 0x10b981, 0xec4899];
             const geometries = [
-                () => new THREE.BoxGeometry(18.0, 18.0, 18.0),
-                () => new THREE.SphereGeometry(11.0, 16, 16),
-                () => new THREE.ConeGeometry(11.0, 19.0, 16)
+                () => new THREE.BoxGeometry(72.0 * 2.0 * 0.5 * 2.0 * 0.5 * 0.5 * 2.0 * 0.5, 72.0 * 2.0 * 0.5 * 2.0 * 0.5 * 0.5 * 2.0 * 0.5, 72.0 * 2.0 * 0.5 * 2.0 * 0.5 * 0.5 * 2.0 * 0.5),
+                () => new THREE.SphereGeometry(44.0 * 2.0 * 0.5 * 2.0 * 0.5 * 0.5 * 2.0 * 0.5, 16, 16),
+                () => new THREE.ConeGeometry(44.0 * 2.0 * 0.5 * 2.0 * 0.5 * 0.5 * 2.0 * 0.5, 76.0 * 2.0 * 0.5 * 2.0 * 0.5 * 0.5 * 2.0 * 0.5, 16)
             ];
 
             for (let i = 0; i < userTrashCount; i++) {
@@ -963,7 +965,7 @@
                     }
                 }
 
-                mesh.position.set(x, 9.0, z);
+                mesh.position.set(x, 36.0 * 0.5 * 0.5, z);
                 mesh.castShadow = true;
 
                 scene.add(mesh);
@@ -993,15 +995,15 @@
         }
 
         function spawnTireTrack(pos) {
-            const trackGeo = new THREE.PlaneGeometry(3.0, 6.0);
-            const trackMat = new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.4 });
+            const trackGeo = new THREE.PlaneGeometry(18.0 * 1.5, 36.0 * 1.5);
+            const trackMat = new THREE.MeshBasicMaterial({ color: 0x111111, transparent: true, opacity: 0.95 });
             const mesh = new THREE.Mesh(trackGeo, trackMat);
             mesh.position.copy(pos);
             mesh.position.y = 0.2;
             mesh.rotation.x = -Math.PI / 2;
             scene.add(mesh);
-            tireTracks.push({ mesh: mesh, opacity: 0.4 });
-            if (tireTracks.length > 150) {
+            tireTracks.push({ mesh: mesh, opacity: 0.95 });
+            if (tireTracks.length > 400) {
                 const old = tireTracks.shift();
                 scene.remove(old.mesh);
             }
@@ -1041,8 +1043,8 @@
                     if (!activeTouches[touch.identifier]) {
                         const center = { x: touch.clientX, y: touch.clientY };
                         zoneEl.style.display = 'flex';
-                        zoneEl.style.left = (center.x - 60) + 'px';
-                        zoneEl.style.top = (center.y - 60) + 'px';
+                        zoneEl.style.left = (center.x - 70) + 'px';
+                        zoneEl.style.top = (center.y - 70) + 'px';
                         knobEl.style.transform = `translate(0px, 0px)`;
 
                         activeTouches[touch.identifier] = { player, zoneEl, knobEl, center, deltaX: 0, deltaZ: 0 };
@@ -1080,7 +1082,7 @@
                 const dx = touch.clientX - info.center.x;
                 const dy = touch.clientY - info.center.y;
                 const dist = Math.sqrt(dx * dx + dy * dy);
-                const maxDist = 35;
+                const maxDist = 40;
                 let nx = dx, ny = dy;
                 if (dist > maxDist) {
                     nx = (dx / dist) * maxDist;
@@ -1113,7 +1115,7 @@
 
             for (let i = tireTracks.length - 1; i >= 0; i--) {
                 const tr = tireTracks[i];
-                tr.opacity -= delta * 0.04;
+                tr.opacity -= delta * 0.03;
                 tr.mesh.material.opacity = Math.max(0, tr.opacity);
                 if (tr.opacity <= 0) {
                     scene.remove(tr.mesh);
@@ -1152,7 +1154,7 @@
 
                 if (boss.fireCooldown > counts.bossCd && boss.hp > 0) {
                     boss.fireCooldown = 0;
-                    const fireballGeo = new THREE.SphereGeometry(72.0, 16, 16); // 2x boss fireball size
+                    const fireballGeo = new THREE.SphereGeometry(140.0 * 0.5 * 0.7 * 0.7 * 0.7 * 0.7, 16, 16);
                     const fireballMat = new THREE.MeshBasicMaterial({ color: 0xf97316 });
                     const fireballMesh = new THREE.Mesh(fireballGeo, fireballMat);
                     fireballMesh.position.copy(boss.pos);
@@ -1161,7 +1163,7 @@
 
                     const targetPos = robots[0].pos;
                     const fireDir = new THREE.Vector3().subVectors(targetPos, boss.pos).normalize();
-                    fireballs.push({ mesh: fireballMesh, velocity: fireDir.multiplyScalar(3.0) });
+                    fireballs.push({ mesh: fireballMesh, velocity: fireDir.multiplyScalar(4.0) });
                 }
             }
 
@@ -1171,15 +1173,15 @@
                 fb.mesh.position.y = 35.0;
 
                 robots.forEach(robot => {
-                    if (robot.pos.distanceTo(fb.mesh.position) < 55.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
+                    if (robot.pos.distanceTo(fb.mesh.position) < 65.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
                         playExplosionSound();
-                        spawn3DфераExplosion(fb.mesh.position, 0xff5500, 2.5);
+                        spawn3DфераExplosion(fb.mesh.position, 0xff5500, 3.0);
                         robot.freezeTimer = 1.5;
                         robot.invincibleTimer = 3.0;
                         robot.flipTimer = 1.5;
 
                         const pushDir = new THREE.Vector3().subVectors(robot.pos, fb.mesh.position).normalize();
-                        robot.velocity.addScaledVector(pushDir, 15.0);
+                        robot.velocity.addScaledVector(pushDir, 18.0);
 
                         scene.remove(fb.mesh);
                         fireballs.splice(i, 1);
@@ -1187,15 +1189,14 @@
                 });
             }
 
-            // Strictly linear movement for wandering enemies
             enemies.forEach(en => {
                 const limit = arenaSize / 2 - 50;
-                en.mesh.position.addScaledVector(en.dir, (en.speed * 2.5) * speedFactor);
+                en.mesh.position.addScaledVector(en.dir, (en.speed * 3.5) * speedFactor);
                 en.mesh.position.y = 0;
 
                 if (Math.abs(en.mesh.position.x) > limit || Math.abs(en.mesh.position.z) > limit) {
                     en.dir.negate();
-                    en.mesh.position.addScaledVector(en.dir, 10);
+                    en.mesh.position.addScaledVector(en.dir, 15);
                 }
             });
 
@@ -1227,15 +1228,15 @@
                     const totalTime = 1.5;
                     const progress = 1.0 - (robot.flipTimer / totalTime);
                     
-                    // Exaggerated cartoon flip: 1.5 somersaults (くるくるっ！どてっ！)
+                    // Exactly 1 full rotation (Math.PI * 2.0) for the flip-over animation
                     if (progress < 0.8) {
                         const jumpP = progress / 0.8;
-                        robot.pos.y = Math.sin(jumpP * Math.PI) * 150.0; // elevated nicely
-                        robot.mesh.rotation.x = jumpP * Math.PI * 3.0; // 1.5 rotations
+                        robot.pos.y = Math.sin(jumpP * Math.PI) * 160.0; 
+                        robot.mesh.rotation.x = jumpP * Math.PI * 2.0;
                         robot.mesh.rotation.z = 0;
                     } else {
-                        robot.pos.y = 1.0; // slight elevation to prevent Z-fighting
-                        robot.mesh.rotation.x = Math.PI; // completely upside down
+                        robot.pos.y = 8.0;
+                        robot.mesh.rotation.x = Math.PI * 2.0;
                         robot.mesh.rotation.z = 0;
                     }
                 } else {
@@ -1307,8 +1308,8 @@
                     }
 
                     if (Math.random() < 0.3 && robot.flipTimer <= 0) {
-                        const leftOffset = new THREE.Vector3(-15, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), robot.rotationAngle);
-                        const rightOffset = new THREE.Vector3(15, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), robot.rotationAngle);
+                        const leftOffset = new THREE.Vector3(-14, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), robot.rotationAngle);
+                        const rightOffset = new THREE.Vector3(14, 0, 0).applyAxisAngle(new THREE.Vector3(0, 1, 0), robot.rotationAngle);
                         spawnTireTrack(robot.pos.clone().add(leftOffset));
                         spawnTireTrack(robot.pos.clone().add(rightOffset));
                     }
@@ -1341,16 +1342,16 @@
                 if (currentStage >= 3 && robot.flipTimer <= 0) {
                     for (let bIndex = bombs.length - 1; bIndex >= 0; bIndex--) {
                         const bomb = bombs[bIndex];
-                        if (robot.pos.distanceTo(bomb.mesh.position) < 55.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
+                        if (robot.pos.distanceTo(bomb.mesh.position) < 65.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
                             playExplosionSound();
-                            spawn3DфераExplosion(bomb.mesh.position, 0xff2200, 3.0);
+                            spawn3DфераExplosion(bomb.mesh.position, 0xff2200, 3.5);
                             
                             robot.freezeTimer = 1.5;
                             robot.invincibleTimer = 3.0;
                             robot.flipTimer = 1.5;
 
                             const pushDir = new THREE.Vector3().subVectors(robot.pos, bomb.mesh.position).normalize();
-                            robot.velocity.addScaledVector(pushDir, 15.0);
+                            robot.velocity.addScaledVector(pushDir, 18.0);
 
                             scene.remove(bomb.mesh);
                             bombs.splice(bIndex, 1);
@@ -1361,23 +1362,23 @@
 
                 if (currentStage >= 4 && robot.flipTimer <= 0) {
                     enemies.forEach(en => {
-                        if (robot.pos.distanceTo(en.mesh.position) < 55.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
+                        if (robot.pos.distanceTo(en.mesh.position) < 65.0 && robot.freezeTimer <= 0 && robot.invincibleTimer <= 0) {
                             playExplosionSound();
-                            spawn3DфераExplosion(en.mesh.position, 0xff0000, 2.5);
+                            spawn3DфераExplosion(en.mesh.position, 0xff0000, 3.0);
 
                             robot.freezeTimer = 1.5;
                             robot.invincibleTimer = 3.0;
                             robot.flipTimer = 1.5;
 
                             const pushDir = new THREE.Vector3().subVectors(robot.pos, en.mesh.position).normalize();
-                            robot.velocity.addScaledVector(pushDir, 15.0);
+                            robot.velocity.addScaledVector(pushDir, 18.0);
                         }
                     });
                 }
 
                 if (currentStage === 5 && boss && robot.flipTimer <= 0) {
                     const distToBoss = robot.pos.distanceTo(boss.pos);
-                    if (distToBoss < 120.0 && robot.freezeTimer <= 0) {
+                    if (distToBoss < 130.0 && robot.freezeTimer <= 0) {
                         if (boss.hp > 0) {
                             const attackPower = 1 + robot.score;
                             boss.hp -= attackPower;
@@ -1385,7 +1386,8 @@
                             spawn3DфераExplosion(boss.pos, 0xffaa00, 4.0);
 
                             const pushDir = new THREE.Vector3().subVectors(robot.pos, boss.pos).normalize();
-                            robot.velocity.addScaledVector(pushDir, 15.0);
+                            robot.pos.addScaledVector(pushDir, 720.0);
+                            robot.velocity.copy(pushDir.multiplyScalar(512.0));
 
                             updateBossHpBar();
 
@@ -1423,7 +1425,7 @@
             trashes.forEach(trash => {
                 if (!trash.collected) {
                     robots.forEach(robot => {
-                        if (robot.pos.distanceTo(trash.mesh.position) < 45.0) {
+                        if (robot.pos.distanceTo(trash.mesh.position) < 55.0) {
                             trash.collected = true;
                             scene.remove(trash.mesh);
                             robot.score++;
@@ -1440,8 +1442,8 @@
                 centerPos.divideScalar(robots.length);
 
                 camera.position.x += (centerPos.x - camera.position.x) * 0.06;
-                camera.position.z += (centerPos.z + 1250 - camera.position.z) * 0.06;
-                camera.position.y = 1400;
+                camera.position.z += (centerPos.z + 600 - camera.position.z) * 0.06;
+                camera.position.y = 700;
                 camera.lookAt(centerPos.x, 0, centerPos.z);
             }
 
@@ -1457,7 +1459,7 @@
 
         function updateHUD() {
             if (playerMode === 1) {
-                document.getElementById('score1Text').innerHTML = `ゴミ: ${robots[0].score} / ${userTrashCount} <span class='text-[5px] opacity-75'>Trash</span>`;
+                document.getElementById('score1Text').innerHTML = `ゴミ: ${robots[0].score} / ${userTrashCount} <span class='text-xs opacity-75'>Trash</span>`;
             } else {
                 document.getElementById('score1Text').innerHTML = `1P: ${robots[0].score}`;
                 document.getElementById('score2Text').innerHTML = `2P: ${robots[1].score}`;
@@ -1499,4 +1501,3 @@
     </script>
 </body>
 </html>
-```
