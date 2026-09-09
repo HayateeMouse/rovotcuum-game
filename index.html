@@ -114,11 +114,11 @@
                 </div>
 
                 <div class="mb-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
-                    <label class="block text-lg font-bold text-blue-600 mb-2">🤖 1P スピード (1.5-10.0): <span id="p1SpeedVal">1.50</span></label>
-                    <input type="range" id="p1SpeedSlider" min="1.5" max="10.0" step="0.1" value="1.50" oninput="updateP1Speed(this.value)" class="w-full accent-blue-600 cursor-pointer h-3">
+                    <label class="block text-lg font-bold text-blue-600 mb-2">🤖 1P スピード (3.0-10.0): <span id="p1SpeedVal">3.00</span></label>
+                    <input type="range" id="p1SpeedSlider" min="3.0" max="10.0" step="0.1" value="3.00" oninput="updateP1Speed(this.value)" class="w-full accent-blue-600 cursor-pointer h-3">
                     
-                    <label class="block text-lg font-bold text-red-600 mt-5 mb-2">🤖 2P スピード (1.5-10.0): <span id="p2SpeedVal">1.50</span></label>
-                    <input type="range" id="p2SpeedSlider" min="1.5" max="10.0" step="0.1" value="1.50" oninput="updateP2Speed(this.value)" class="w-full accent-red-600 cursor-pointer h-3">
+                    <label class="block text-lg font-bold text-red-600 mt-5 mb-2">🤖 2P スピード (3.0-10.0): <span id="p2SpeedVal">3.00</span></label>
+                    <input type="range" id="p2SpeedSlider" min="3.0" max="10.0" step="0.1" value="3.00" oninput="updateP2Speed(this.value)" class="w-full accent-red-600 cursor-pointer h-3">
                 </div>
 
                 <div class="mb-6 pt-5 border-t border-slate-200 flex items-center justify-between">
@@ -184,8 +184,8 @@
         let globalVolume = 0.8;
         let userTrashCount = 10;
         let currentDifficulty = 'beginner';
-        let customP1Speed = 1.50;
-        let customP2Speed = 1.50;
+        let customP1Speed = 3.00;
+        let customP2Speed = 3.00;
         const arenaSize = 1800;
 
         function initAudioContext() {
@@ -232,7 +232,7 @@
             });
 
             if (level === 'beginner') {
-                customP1Speed = 1.50; customP2Speed = 1.50;
+                customP1Speed = 3.00; customP2Speed = 3.00;
             } else if (level === 'intermediate') {
                 customP1Speed = 4.50; customP2Speed = 4.50;
             } else if (level === 'pro') {
@@ -253,7 +253,7 @@
             osc.type = 'sine';
             osc.frequency.setValueAtTime(1400, now);
             osc.frequency.exponentialRampToValueAtTime(3600, now + 0.25);
-            gain.gain.setValueAtTime(800000.0 * globalVolume, now);
+            gain.gain.setValueAtTime(0.3 * globalVolume, now); // 音量を適正値に修正
             gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
@@ -279,7 +279,7 @@
             filter.frequency.linearRampToValueAtTime(30, now + 2.5);
 
             const gain = audioCtx.createGain();
-            gain.gain.setValueAtTime(80.0 * globalVolume, now);
+            gain.gain.setValueAtTime(0.5 * globalVolume, now); // 音量を適正値に修正
             gain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
 
             noise.connect(filter);
@@ -298,11 +298,12 @@
             osc.frequency.setValueAtTime(1800, now);
             osc.frequency.exponentialRampToValueAtTime(40, now + 1.2);
 
-            gain.gain.setValueAtTime(60.0 * globalVolume, now);
-            gain.gain.linearRampToValueAtTime(0.001, now + 1.2);
+            const gainNode = audioCtx.createGain();
+            gainNode.gain.setValueAtTime(0.4 * globalVolume, now); // 音量を適正値に修正
+            gainNode.gain.linearRampToValueAtTime(0.001, now + 1.2);
 
-            osc.connect(gain);
-            gain.connect(audioCtx.destination);
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
             osc.start(now);
             osc.stop(now + 1.2);
         }
@@ -332,7 +333,7 @@
                 filter.Q.setValueAtTime(3, audioCtx.currentTime);
 
                 vacuumGain = audioCtx.createGain();
-                vacuumGain.gain.setValueAtTime(0.000000001 * globalVolume, audioCtx.currentTime);
+                vacuumGain.gain.setValueAtTime(0.1 * globalVolume, audioCtx.currentTime); // 音量を適正値に修正
 
                 vacuumNode.connect(filter);
                 filter.connect(vacuumGain);
@@ -399,7 +400,11 @@
                 document.getElementById('settingsScreen').classList.add('hidden');
                 document.getElementById('stageSelectScreen').classList.remove('hidden');
             } else {
-                alert('コードが違います (Wrong Code)');
+                // message box instead of alert, simulated via DOM
+                const btn = document.querySelector('button[onclick="checkSecretCode()"]');
+                const origText = btn.innerHTML;
+                btn.innerHTML = `<span class="text-red-300">エラー / Error</span>`;
+                setTimeout(() => btn.innerHTML = origText, 1500);
             }
         }
 
@@ -694,7 +699,7 @@
 
             const createBrushAssembly = () => {
                 const bg = new THREE.Group();
-                bg.scale.set(0.75 * 0.75, 0.75 * 0.75, 0.75 * 0.75); // Exactly 75% brush size
+                bg.scale.set(0.75 * 0.75, 0.75 * 0.75, 0.75 * 0.75);
                 const root = new THREE.Mesh(new THREE.CylinderGeometry(10.0, 10.0, 3.0, 16), brushRootMat);
                 root.position.y = 1.5;
                 bg.add(root);
@@ -767,7 +772,6 @@
 
         function createHoles() {
             const counts = getDifficultyCounts();
-            // Hole size doubled (2x) based on previous instruction
             const holeGeo = new THREE.CylinderGeometry(140.0 * 2.0 * 0.5 * 0.5 * 0.5 * 2.0 * 2.0, 140.0 * 2.0 * 0.5 * 0.5 * 0.5 * 2.0 * 2.0, 0.8, 32);
             const holeMat = new THREE.MeshBasicMaterial({ color: 0x0f172a, polygonOffset: true, polygonOffsetUnits: -6 });
 
@@ -790,7 +794,6 @@
         function createBombs() {
             const counts = getDifficultyCounts();
             const bombGroup = new THREE.Group();
-            // Bombs doubled (2x) per latest instruction
             bombGroup.scale.set(1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0, 1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0, 1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0);
             
             const bodyGeo = new THREE.SphereGeometry(28.0, 16, 16);
@@ -832,7 +835,6 @@
         function createEnemies() {
             const counts = getDifficultyCounts();
             const enemyGroup = new THREE.Group();
-            // Enemies doubled (2x) per latest instruction
             enemyGroup.scale.set(1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0, 1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0, 1.6875 * 0.75 * 0.5 * 2.0 * 2.0 * 0.5 * 0.5 * 2.0);
             const bodyGeo = new THREE.SphereGeometry(28.0, 16, 16);
             const bodyMat = new THREE.MeshStandardMaterial({ color: 0xdc2626, roughness: 0.1, emissive: 0x990000 });
@@ -1228,7 +1230,6 @@
                     const totalTime = 1.5;
                     const progress = 1.0 - (robot.flipTimer / totalTime);
                     
-                    // Exactly 1 full rotation (Math.PI * 2.0) for the flip-over animation
                     if (progress < 0.8) {
                         const jumpP = progress / 0.8;
                         robot.pos.y = Math.sin(jumpP * Math.PI) * 160.0; 
