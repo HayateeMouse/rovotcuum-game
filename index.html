@@ -9,7 +9,8 @@
     <style>
         body { margin: 0; overflow: hidden; background: #1a1a2e; font-family: 'Inter', sans-serif; user-select: none; }
         canvas { display: block; width: 100vw; height: 100vh; }
-        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; box-sizing: border-box; }
+        .ui-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; display: flex; flex-direction: column; justify-content: space-between; padding: 12px; box-sizing: border-box; }
+        @media (min-width: 640px) { .ui-layer { padding: 24px; } }
         .interactive { pointer-events: auto; }
         
         .split-line {
@@ -34,138 +35,139 @@
     <div id="splitLine" class="split-line"></div>
 
     <div class="ui-layer">
-        <div id="hud" class="flex justify-between items-center w-full max-w-6xl mx-auto bg-white/95 backdrop-blur-md px-8 py-5 rounded-3xl shadow-2xl hidden border-2 border-slate-100">
-            <div class="flex items-center gap-5">
-                <button onclick="openSettings()" class="interactive px-6 py-3 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded-2xl text-lg shadow-lg flex flex-col items-center leading-tight transition transform active:scale-95">
-                    <span>⚙️ 設定 <span class="text-xs opacity-75">Settings</span></span>
+        <div id="hud" class="flex justify-between items-center w-full max-w-6xl mx-auto bg-white/95 backdrop-blur-md px-4 py-3 sm:px-8 sm:py-5 rounded-2xl sm:rounded-3xl shadow-2xl hidden border-2 border-slate-100 flex-wrap gap-2">
+            <div class="flex items-center gap-2 sm:gap-5">
+                <button onclick="openSettings()" class="interactive px-3 py-2 sm:px-6 sm:py-3 bg-slate-700 hover:bg-slate-800 text-white font-bold rounded-xl sm:rounded-2xl text-sm sm:text-lg shadow-lg flex flex-col items-center leading-tight transition transform active:scale-95">
+                    <span>⚙️ 設定 <span class="text-[10px] sm:text-xs opacity-75 hidden sm:inline">Settings</span></span>
                 </button>
-                <div id="stageIndicator" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-bold text-lg shadow-lg flex flex-col items-center leading-tight">
-                    <span>ステージ 1 <span class="text-xs opacity-75">Stage 1</span></span>
+                <div id="stageIndicator" class="bg-indigo-600 text-white px-3 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-sm sm:text-lg shadow-lg flex flex-col items-center leading-tight">
+                    <span>ステージ 1 <span class="text-[10px] sm:text-xs opacity-75 hidden sm:inline">Stage 1</span></span>
                 </div>
             </div>
             
-            <div id="bossHpContainer" class="hidden flex-col items-center bg-rose-50 border-3 border-rose-500 px-8 py-3 rounded-2xl shadow-xl">
-                <span id="bossHpText" class="text-lg font-black text-rose-700">👑 ゴリラボス (HP: 100/100) <span class="text-xs opacity-75">Boss Threat</span></span>
-                <div class="w-60 bg-slate-200 h-3.5 rounded-full overflow-hidden mt-2 border border-rose-300 shadow-inner">
+            <div id="bossHpContainer" class="hidden flex-col items-center bg-rose-50 border-2 sm:border-3 border-rose-500 px-4 py-2 sm:px-8 sm:py-3 rounded-xl sm:rounded-2xl shadow-xl">
+                <span id="bossHpText" class="text-sm sm:text-lg font-black text-rose-700">👑 ゴリラボス (HP: 100/100)</span>
+                <div class="w-32 sm:w-60 bg-slate-200 h-2 sm:h-3.5 rounded-full overflow-hidden mt-1 sm:mt-2 border border-rose-300 shadow-inner">
                     <div id="bossHpBar" class="bg-rose-600 h-full w-full transition-all duration-100"></div>
                 </div>
             </div>
 
-            <div id="score1Container" class="flex items-center gap-5 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 shadow">
-                <div class="w-6 h-6 rounded-full bg-slate-900 border-2 border-white shadow"></div>
-                <div class="flex flex-col leading-tight">
-                    <span id="score1Text" class="text-lg font-bold text-slate-800">ゴミ: 0/10 <span class="text-xs opacity-75">Trash</span></span>
+            <div class="flex gap-2 sm:gap-5">
+                <div id="score1Container" class="flex items-center gap-2 sm:gap-5 bg-slate-50 px-3 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 shadow">
+                    <div class="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-slate-900 border-2 border-white shadow"></div>
+                    <div class="flex flex-col leading-tight">
+                        <span id="score1Text" class="text-sm sm:text-lg font-bold text-slate-800">ゴミ: 0/10 <span class="text-[10px] sm:text-xs opacity-75 hidden sm:inline">Trash</span></span>
+                    </div>
                 </div>
-            </div>
-            <div id="score2Container" class="flex items-center gap-5 bg-slate-50 px-6 py-3 rounded-2xl border border-slate-200 shadow hidden">
-                <div class="flex flex-col leading-tight text-right">
-                    <span id="score2Text" class="text-lg font-bold text-slate-800">2P: 0 <span class="text-xs opacity-75">P2</span></span>
+                <div id="score2Container" class="flex items-center gap-2 sm:gap-5 bg-slate-50 px-3 py-2 sm:px-6 sm:py-3 rounded-xl sm:rounded-2xl border border-slate-200 shadow hidden">
+                    <div class="flex flex-col leading-tight text-right">
+                        <span id="score2Text" class="text-sm sm:text-lg font-bold text-slate-800">2P: 0 <span class="text-[10px] sm:text-xs opacity-75 hidden sm:inline">P2</span></span>
+                    </div>
+                    <div class="w-4 h-4 sm:w-6 sm:h-6 rounded-full bg-white border-2 border-slate-900 shadow"></div>
                 </div>
-                <div class="w-6 h-6 rounded-full bg-white border-2 border-slate-900 shadow"></div>
             </div>
         </div>
 
         <div id="menuScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-30">
-            <div class="bg-white p-12 rounded-3xl shadow-2xl text-center max-w-xl w-full mx-4 border-2 border-indigo-100">
-                <h1 class="text-4xl font-black text-indigo-600 mb-2">🧹 おそうじロボット大作戦</h1>
-                <p class="text-lg font-bold text-indigo-400 mb-10">Robot Cleaning Adventure</p>
+            <div class="bg-white p-6 sm:p-12 rounded-2xl sm:rounded-3xl shadow-2xl text-center max-w-xl w-full mx-4 border-2 border-indigo-100 max-h-[90vh] overflow-y-auto">
+                <h1 class="text-2xl sm:text-4xl font-black text-indigo-600 mb-1 sm:mb-2">🧹 おそうじロボット大作戦</h1>
+                <p class="text-sm sm:text-lg font-bold text-indigo-400 mb-6 sm:mb-10">Robot Cleaning Adventure</p>
                 
-                <div class="flex flex-col gap-5">
-                    <button onclick="startGame(1)" class="w-full py-5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-xl rounded-2xl shadow-xl hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
-                        <span>👤 1人で あそぶ <span class="text-base opacity-90 font-normal">Single Player</span></span>
+                <div class="flex flex-col gap-3 sm:gap-5">
+                    <button onclick="startGame(1)" class="w-full py-3 sm:py-5 bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-bold text-lg sm:text-xl rounded-xl sm:rounded-2xl shadow-xl hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
+                        <span>👤 1人で あそぶ <span class="text-xs sm:text-base opacity-90 font-normal">Single Player</span></span>
                     </button>
-                    <button onclick="startGame(2)" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-xl rounded-2xl shadow-xl hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
-                        <span>👥 2人で たいせん <span class="text-base opacity-90 font-normal">2-Player Versus</span></span>
+                    <button onclick="startGame(2)" class="w-full py-3 sm:py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-lg sm:text-xl rounded-xl sm:rounded-2xl shadow-xl hover:scale-105 transition transform active:scale-95 flex flex-col items-center">
+                        <span>👥 2人で たいせん <span class="text-xs sm:text-base opacity-90 font-normal">2-Player Versus</span></span>
                     </button>
-                    <button onclick="openSettings()" class="w-full py-4 bg-slate-200 text-slate-700 font-bold text-lg rounded-2xl shadow hover:bg-slate-300 transition flex flex-col items-center">
-                        <span>⚙️ 設定・テスト <span class="text-base opacity-80 font-normal">Settings & Test</span></span>
+                    <button onclick="openSettings()" class="w-full py-2 sm:py-4 bg-slate-200 text-slate-700 font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl shadow hover:bg-slate-300 transition flex flex-col items-center">
+                        <span>⚙️ 設定・テスト <span class="text-xs sm:text-base opacity-80 font-normal">Settings & Test</span></span>
                     </button>
                 </div>
             </div>
         </div>
 
-        <div id="settingsScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden overflow-y-auto py-12">
-            <div class="bg-white p-10 rounded-3xl shadow-2xl text-left max-w-2xl w-full mx-4 border-2 border-slate-200">
-                <h1 class="text-2xl font-black text-slate-800 mb-6 text-center">⚙️ 設定画面 <span class="text-lg opacity-70">Settings</span></h1>
+        <div id="settingsScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden overflow-y-auto py-6 sm:py-12">
+            <div class="bg-white p-6 sm:p-10 rounded-2xl sm:rounded-3xl shadow-2xl text-left max-w-2xl w-full mx-4 border-2 border-slate-200 max-h-[90vh] overflow-y-auto">
+                <h1 class="text-xl sm:text-2xl font-black text-slate-800 mb-4 sm:mb-6 text-center">⚙️ 設定画面 <span class="text-base sm:text-lg opacity-70">Settings</span></h1>
                 
-                <div class="mb-6">
-                    <label class="block text-lg font-bold text-slate-700 mb-2">🔊 音量 / Volume: <span id="volumeValue">80</span>%</label>
-                    <input type="range" id="volumeSlider" min="0" max="100" value="80" oninput="updateVolume(this.value)" class="w-full accent-indigo-600 cursor-pointer h-3">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-base sm:text-lg font-bold text-slate-700 mb-1 sm:mb-2">🔊 音量 / Volume: <span id="volumeValue">80</span>%</label>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="80" oninput="updateVolume(this.value)" class="w-full accent-indigo-600 cursor-pointer h-2 sm:h-3">
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-lg font-bold text-slate-700 mb-2">🗑️ ゴミの数 / Trash (10〜200): <span id="trashCountValue">10</span>個</label>
-                    <input type="range" id="trashCountSlider" min="10" max="200" step="10" value="10" oninput="updateTrashCountSetting(this.value)" class="w-full accent-indigo-600 cursor-pointer h-3">
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-base sm:text-lg font-bold text-slate-700 mb-1 sm:mb-2">🗑️ ゴミの数 / Trash: <span id="trashCountValue">10</span>個</label>
+                    <input type="range" id="trashCountSlider" min="10" max="200" step="10" value="10" oninput="updateTrashCountSetting(this.value)" class="w-full accent-indigo-600 cursor-pointer h-2 sm:h-3">
                 </div>
 
-                <div class="mb-6">
-                    <label class="block text-lg font-bold text-slate-700 mb-2">🎮 難易度 / Difficulty Preset</label>
-                    <div class="grid grid-cols-3 gap-4">
-                        <button id="diffBeginner" onclick="setDifficulty('beginner')" class="py-4 bg-indigo-600 text-white font-bold rounded-2xl text-base flex flex-col items-center shadow-md">
-                            <span>初級（4歳）</span><span class="text-xs opacity-90">Beginner</span>
+                <div class="mb-4 sm:mb-6">
+                    <label class="block text-base sm:text-lg font-bold text-slate-700 mb-1 sm:mb-2">🎮 難易度 / Difficulty</label>
+                    <div class="grid grid-cols-3 gap-2 sm:gap-4">
+                        <button id="diffBeginner" onclick="setDifficulty('beginner')" class="py-2 sm:py-4 bg-indigo-600 text-white font-bold rounded-xl sm:rounded-2xl text-sm sm:text-base flex flex-col items-center shadow-md">
+                            <span>初級</span><span class="text-[10px] sm:text-xs opacity-90 hidden sm:inline">Beginner</span>
                         </button>
-                        <button id="diffIntermediate" onclick="setDifficulty('intermediate')" class="py-4 bg-slate-100 text-slate-700 font-bold rounded-2xl text-base flex flex-col items-center shadow-md">
-                            <span>中級（小学生）</span><span class="text-xs opacity-80">Intermediate</span>
+                        <button id="diffIntermediate" onclick="setDifficulty('intermediate')" class="py-2 sm:py-4 bg-slate-100 text-slate-700 font-bold rounded-xl sm:rounded-2xl text-sm sm:text-base flex flex-col items-center shadow-md">
+                            <span>中級</span><span class="text-[10px] sm:text-xs opacity-80 hidden sm:inline">Intermediate</span>
                         </button>
-                        <button id="diffPro" onclick="setDifficulty('pro')" class="py-4 bg-slate-100 text-slate-700 font-bold rounded-2xl text-base flex flex-col items-center shadow-md">
-                            <span>上級（プロ）</span><span class="text-xs opacity-80">Advanced</span>
+                        <button id="diffPro" onclick="setDifficulty('pro')" class="py-2 sm:py-4 bg-slate-100 text-slate-700 font-bold rounded-xl sm:rounded-2xl text-sm sm:text-base flex flex-col items-center shadow-md">
+                            <span>上級</span><span class="text-[10px] sm:text-xs opacity-80 hidden sm:inline">Advanced</span>
                         </button>
                     </div>
                 </div>
 
-                <div class="mb-6 p-6 bg-slate-50 rounded-2xl border border-slate-200">
-                    <label class="block text-lg font-bold text-blue-600 mb-2">🤖 1P スピード (3.0-10.0): <span id="p1SpeedVal">3.00</span></label>
-                    <input type="range" id="p1SpeedSlider" min="3.0" max="10.0" step="0.1" value="3.00" oninput="updateP1Speed(this.value)" class="w-full accent-blue-600 cursor-pointer h-3">
+                <div class="mb-4 sm:mb-6 p-4 sm:p-6 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-200">
+                    <label class="block text-base sm:text-lg font-bold text-blue-600 mb-1 sm:mb-2">🤖 1P スピード (3.0-10.0): <span id="p1SpeedVal">3.00</span></label>
+                    <input type="range" id="p1SpeedSlider" min="3.0" max="10.0" step="0.1" value="3.00" oninput="updateP1Speed(this.value)" class="w-full accent-blue-600 cursor-pointer h-2 sm:h-3">
                     
-                    <label class="block text-lg font-bold text-red-600 mt-5 mb-2">🤖 2P スピード (3.0-10.0): <span id="p2SpeedVal">3.00</span></label>
-                    <input type="range" id="p2SpeedSlider" min="3.0" max="10.0" step="0.1" value="3.00" oninput="updateP2Speed(this.value)" class="w-full accent-red-600 cursor-pointer h-3">
+                    <label class="block text-base sm:text-lg font-bold text-red-600 mt-3 sm:mt-5 mb-1 sm:mb-2">🤖 2P スピード (3.0-10.0): <span id="p2SpeedVal">3.00</span></label>
+                    <input type="range" id="p2SpeedSlider" min="3.0" max="10.0" step="0.1" value="3.00" oninput="updateP2Speed(this.value)" class="w-full accent-red-600 cursor-pointer h-2 sm:h-3">
                 </div>
 
-                <div class="mb-6 pt-5 border-t border-slate-200 flex items-center justify-between">
+                <div class="mb-4 sm:mb-6 pt-3 sm:pt-5 border-t border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
-                        <span class="block text-lg font-bold text-slate-500">🧪 テストコード (061606)</span>
-                        <span class="text-base text-slate-400">Secret Test Code</span>
+                        <span class="block text-base sm:text-lg font-bold text-slate-500">🧪 テストコード (061606)</span>
                     </div>
-                    <div class="flex gap-4 items-center">
-                        <input type="password" id="secretCodeInput" maxlength="6" placeholder="******" class="w-36 px-4 py-3 border border-slate-300 rounded-2xl text-center tracking-widest font-bold text-slate-700 text-lg shadow-inner">
-                        <button onclick="checkSecretCode()" class="px-6 py-3 bg-slate-800 text-white font-bold rounded-2xl hover:bg-slate-700 text-base shadow">
-                            <span>認証 <span class="text-xs opacity-75">Auth</span></span>
+                    <div class="flex gap-2 sm:gap-4 items-center">
+                        <input type="password" id="secretCodeInput" maxlength="6" placeholder="******" class="w-24 sm:w-36 px-2 py-1.5 sm:px-4 sm:py-3 border border-slate-300 rounded-xl sm:rounded-2xl text-center tracking-widest font-bold text-slate-700 text-sm sm:text-lg shadow-inner">
+                        <button onclick="checkSecretCode()" class="px-3 py-1.5 sm:px-6 sm:py-3 bg-slate-800 text-white font-bold rounded-xl sm:rounded-2xl hover:bg-slate-700 text-sm sm:text-base shadow">
+                            <span>認証</span>
                         </button>
                     </div>
                 </div>
 
-                <button onclick="closeSettings()" class="w-full py-4 bg-indigo-600 text-white font-bold text-lg rounded-2xl shadow-lg hover:bg-indigo-700 flex flex-col items-center">
+                <button onclick="closeSettings()" class="w-full py-3 sm:py-4 bg-indigo-600 text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl shadow-lg hover:bg-indigo-700 flex flex-col items-center">
                     <span>もどる / Back</span>
                 </button>
             </div>
         </div>
 
         <div id="stageSelectScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden">
-            <div class="bg-white p-10 rounded-3xl shadow-2xl text-center max-w-lg w-full mx-4 border-2 border-amber-200">
-                <h1 class="text-2xl font-black text-amber-600 mb-2">🧪 ステージ選択 <span class="text-lg opacity-75">Test Stage Select</span></h1>
-                <p class="text-lg text-amber-500 font-semibold mb-6">モード / Mode: <span id="testModeDisplay" class="font-bold text-indigo-600">1人プレイ</span> <button onclick="toggleTestMode()" class="underline text-indigo-500 ml-2">(切替/Switch)</button></p>
-                <div class="grid grid-cols-1 gap-4 mb-6">
-                    <button onclick="startTestStage(1)" class="py-4 bg-blue-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 1 (通常) / Normal</button>
-                    <button onclick="startTestStage(2)" class="py-4 bg-indigo-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 2 (落とし穴) / Holes</button>
-                    <button onclick="startTestStage(3)" class="py-4 bg-amber-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 3 (爆弾) / Bombs</button>
-                    <button onclick="startTestStage(4)" class="py-4 bg-purple-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 4 (お邪魔) / Enemies</button>
-                    <button onclick="startTestStage(5)" class="py-4 bg-rose-500 text-white font-bold rounded-2xl text-lg shadow">ステージ 5 (ボス戦) / Boss Fight</button>
+            <div class="bg-white p-6 sm:p-10 rounded-2xl sm:rounded-3xl shadow-2xl text-center max-w-lg w-full mx-4 border-2 border-amber-200 max-h-[90vh] overflow-y-auto">
+                <h1 class="text-xl sm:text-2xl font-black text-amber-600 mb-1 sm:mb-2">🧪 ステージ選択 <span class="text-base sm:text-lg opacity-75 hidden sm:inline">Test Stage Select</span></h1>
+                <p class="text-base sm:text-lg text-amber-500 font-semibold mb-4 sm:mb-6">Mode: <span id="testModeDisplay" class="font-bold text-indigo-600">1人プレイ</span> <button onclick="toggleTestMode()" class="underline text-indigo-500 ml-1 sm:ml-2">(切替)</button></p>
+                <div class="grid grid-cols-1 gap-2 sm:gap-4 mb-4 sm:mb-6">
+                    <button onclick="startTestStage(1)" class="py-2 sm:py-4 bg-blue-500 text-white font-bold rounded-xl sm:rounded-2xl text-base sm:text-lg shadow">ステージ 1 (通常)</button>
+                    <button onclick="startTestStage(2)" class="py-2 sm:py-4 bg-indigo-500 text-white font-bold rounded-xl sm:rounded-2xl text-base sm:text-lg shadow">ステージ 2 (落とし穴)</button>
+                    <button onclick="startTestStage(3)" class="py-2 sm:py-4 bg-amber-500 text-white font-bold rounded-xl sm:rounded-2xl text-base sm:text-lg shadow">ステージ 3 (爆弾)</button>
+                    <button onclick="startTestStage(4)" class="py-2 sm:py-4 bg-purple-500 text-white font-bold rounded-xl sm:rounded-2xl text-base sm:text-lg shadow">ステージ 4 (お邪魔)</button>
+                    <button onclick="startTestStage(5)" class="py-2 sm:py-4 bg-rose-500 text-white font-bold rounded-xl sm:rounded-2xl text-base sm:text-lg shadow">ステージ 5 (ボス戦)</button>
                 </div>
-                <button onclick="returnToMenu()" class="w-full py-4 bg-slate-600 text-white font-bold text-lg rounded-2xl">メニューに戻る / Menu</button>
+                <button onclick="returnToMenu()" class="w-full py-2 sm:py-4 bg-slate-600 text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl">メニューに戻る</button>
             </div>
         </div>
 
         <div id="resultScreen" class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm flex flex-col justify-center items-center interactive z-35 hidden">
-            <div class="bg-white p-12 rounded-3xl shadow-2xl text-center max-w-lg w-full mx-4 border-2 border-yellow-200">
-                <h1 id="resultTitle" class="text-2xl font-black text-yellow-500 mb-2">🏆 ステージクリア！</h1>
-                <p id="resultSubtitle" class="text-lg font-bold text-yellow-600 mb-3">Stage Cleared!</p>
-                <p id="resultMessage" class="text-lg font-bold text-slate-700 mb-8">おめでとう！ Great Job!</p>
-                <div class="flex flex-col gap-5">
-                    <button id="nextStageBtn" onclick="nextStage()" class="w-full py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-lg rounded-2xl shadow-xl flex flex-col items-center">
-                        <span>➡️ つぎのステージへ <span class="text-base opacity-80">Next Stage</span></span>
+            <div class="bg-white p-8 sm:p-12 rounded-2xl sm:rounded-3xl shadow-2xl text-center max-w-lg w-full mx-4 border-2 border-yellow-200">
+                <h1 id="resultTitle" class="text-xl sm:text-2xl font-black text-yellow-500 mb-1 sm:mb-2">🏆 ステージクリア！</h1>
+                <p id="resultSubtitle" class="text-base sm:text-lg font-bold text-yellow-600 mb-2 sm:mb-3">Stage Cleared!</p>
+                <p id="resultMessage" class="text-base sm:text-lg font-bold text-slate-700 mb-6 sm:mb-8">おめでとう！ Great Job!</p>
+                <div class="flex flex-col gap-3 sm:gap-5">
+                    <button id="nextStageBtn" onclick="nextStage()" class="w-full py-3 sm:py-5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl shadow-xl flex flex-col items-center">
+                        <span>➡️ つぎのステージへ <span class="text-xs sm:text-base opacity-80 hidden sm:inline">Next Stage</span></span>
                     </button>
-                    <button onclick="returnToMenu()" class="w-full py-5 bg-slate-700 text-white font-bold text-lg rounded-2xl shadow-xl flex flex-col items-center">
-                        <span>🏠 メニューにもどる <span class="text-base opacity-80">Main Menu</span></span>
+                    <button onclick="returnToMenu()" class="w-full py-3 sm:py-5 bg-slate-700 text-white font-bold text-base sm:text-lg rounded-xl sm:rounded-2xl shadow-xl flex flex-col items-center">
+                        <span>🏠 メニューにもどる <span class="text-xs sm:text-base opacity-80 hidden sm:inline">Main Menu</span></span>
                     </button>
                 </div>
             </div>
