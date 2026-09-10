@@ -202,6 +202,26 @@
             }
         }
 
+        // スマホ(特にiOS)向け：最初のタッチでAudioContextのロックを確実にはずす
+        function unlockAudio() {
+            initAudioContext();
+            if (audioCtx) {
+                // 無音のバッファを再生して音声再生の権限を獲得
+                const buffer = audioCtx.createBuffer(1, 1, 22050);
+                const source = audioCtx.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioCtx.destination);
+                source.start(0);
+            }
+            // 1回実行したら不要なのでイベントを削除
+            document.removeEventListener('touchstart', unlockAudio, true);
+            document.removeEventListener('touchend', unlockAudio, true);
+            document.removeEventListener('click', unlockAudio, true);
+        }
+        document.addEventListener('touchstart', unlockAudio, true);
+        document.addEventListener('touchend', unlockAudio, true);
+        document.addEventListener('click', unlockAudio, true);
+
         function updateVolume(val) {
             globalVolume = val / 100;
             document.getElementById('volumeValue').innerText = val;
